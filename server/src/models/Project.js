@@ -13,3 +13,9 @@ ProjectSchema.virtual('creator', {
   justOne: true,
   ref: 'Account'
 })
+
+// ProjectSchema.virtual('members', {
+//   localField: "_id",
+//   foreignField: "creatorId",
+//   ref: 'Member'
+// })

@@ -3,9 +3,9 @@ import { BadRequest } from "../utils/Errors.js";
 
 class ProjectService {
 
-  async getProjects(query) {
+  async getProjectsByAccountId(query) {
     const project = await dbContext.Projects.find(query)
-      .populate('creator', 'name picture');
+    // .populate('members', 'name picture');
     return project
   }
 

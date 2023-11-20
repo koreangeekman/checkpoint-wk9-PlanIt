@@ -9,13 +9,13 @@ export class ProjectController extends BaseController {
   constructor() {
     super('api/projects')
     this.router
-      .get('', this.getProjects)
+      // 🔽 AUTHENTICATION REQUIRED BELOW 🔽
+      .use(Auth0Provider.getAuthorizedUserInfo)
+      .get('', this.getProjectsByAccountId)
       .get('/:projectId', this.getProjectById)
       .get('/:projectId/sprints', this.getSprintsByProjectId)
       .get('/:projectId/tasks', this.getTasksByProjectId)
       .get('/:projectId/notes', this.getNotesByProjectId)
-      // 🔽 AUTHENTICATION REQUIRED BELOW 🔽
-      .use(Auth0Provider.getAuthorizedUserInfo)
       .post('', this.createProject)
       .post('/:projectId/sprints', this.createSprintWithProjectId)
       .post('/:projectId/tasks', this.createTaskWithProjectId)
@@ -27,9 +27,11 @@ export class ProjectController extends BaseController {
       .put('/:projectId/tasks/:taskId', this.updateTaskWithProjectId)
   }
 
-  async getProjects(req, res, nxt) {
+  // SECTION 🔽 REQUIRES AUTHENTICATION 🔽
+
+  async getProjectsByAccountId(req, res, nxt) {
     try {
-      const projects = await projectService.getProjects(req.query);
+      const projects = await projectService.getProjectsByAccountId(req.query);
       res.send(projects)
     }
     catch (error) { nxt(error) }
@@ -66,8 +68,6 @@ export class ProjectController extends BaseController {
     }
     catch (error) { nxt(error) }
   }
-
-  // SECTION 🔽 REQUIRES AUTHENTICATION 🔽
 
   async createProject(req, res, nxt) {
     try {

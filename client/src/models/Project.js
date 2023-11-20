@@ -1,4 +1,4 @@
-export class Note {
+export class Project {
   constructor(data) {
     this.id = data.id || data._id
     this.name = data.name

@@ -12,26 +12,26 @@
           </div>
           <div class="col-12 mt-4 mt-md-5 p-0">
             <section class="row px-3 text-primary darken-20">
-              <div class="col-4">
+              <div class="col-5">
                 <p class="mb-0">NAME</p>
               </div>
               <div class="col-4">
                 <p class="mb-0">MEMBERS</p>
               </div>
-              <div class="col-4">
+              <div class="col-3">
                 <p class="mb-0">STARTED</p>
               </div>
             </section>
             <hr>
-            <section v-for="project in projects" class="row px-3">
-              <div class="col-4">
+            <section v-for="project in projects" class="row px-3 py-2 shadow my-3">
+              <div class="col-5">
                 <p class="mb-0 fs-5">{{ project.name }}</p>
               </div>
               <div class="col-4">
                 <img v-for="member in project.members" :src="member.picture" :alt="member.name" :title="member.name"
                   class="memberImg rounded-circle" :class="member.name == project.creator.name ? 'projectOwner' : ''">
               </div>
-              <div class="col-4">
+              <div class="col-3">
                 <p class="mb-0 courier">{{ project.createdAt.toLocaleDateString() }}</p>
               </div>
             </section>
@@ -44,11 +44,26 @@
 
 
 <script>
-import { computed } from 'vue';
 import { AppState } from "../AppState.js";
+import { computed, onMounted } from 'vue';
+import { projectService } from '../services/ProjectService.js'
 
 export default {
   setup() {
+
+    async function _getProjectsByAccountId() {
+      try {
+        await projectService.getProjectsByAccountId();
+      }
+      catch (error) { Pop.error(error) }
+    }
+
+    onMounted(() => {
+      if (AppState.account || !AppState.projects) {
+        _getProjectsByAccountId();
+      }
+    })
+
     return {
       account: computed(() => AppState.account),
       projects: computed(() => AppState.projects),
