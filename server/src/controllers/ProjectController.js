@@ -9,9 +9,10 @@ export class ProjectController extends BaseController {
   constructor() {
     super('api/projects')
     this.router
+      .get('', this.getProjects)
       // 🔽 AUTHENTICATION REQUIRED BELOW 🔽
       .use(Auth0Provider.getAuthorizedUserInfo)
-      .get('', this.getProjectsByAccountId)
+      .get('/account', this.getProjectsByAccountId)
       .get('/:projectId', this.getProjectById)
       .get('/:projectId/sprints', this.getSprintsByProjectId)
       .get('/:projectId/tasks', this.getTasksByProjectId)
@@ -29,9 +30,17 @@ export class ProjectController extends BaseController {
 
   // SECTION 🔽 REQUIRES AUTHENTICATION 🔽
 
+  async getProjects(req, res, nxt) {
+    try {
+      const projects = await projectService.getProjects(req.query);
+      res.send(projects)
+    }
+    catch (error) { nxt(error) }
+  }
+
   async getProjectsByAccountId(req, res, nxt) {
     try {
-      const projects = await projectService.getProjectsByAccountId(req.query);
+      const projects = await projectService.getProjectsByAccountId(req.userInfo.id);
       res.send(projects)
     }
     catch (error) { nxt(error) }

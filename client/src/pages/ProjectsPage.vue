@@ -44,6 +44,7 @@
 
 
 <script>
+import Pop from "../utils/Pop.js";
 import { AppState } from "../AppState.js";
 import { computed, onMounted } from 'vue';
 import { projectService } from '../services/ProjectService.js'
@@ -52,9 +53,7 @@ export default {
   setup() {
 
     async function _getProjectsByAccountId() {
-      try {
-        await projectService.getProjectsByAccountId();
-      }
+      try { await projectService.getProjectsByAccountId(); }
       catch (error) { Pop.error(error) }
     }
 

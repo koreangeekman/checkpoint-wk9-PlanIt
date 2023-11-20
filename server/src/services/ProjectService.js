@@ -3,21 +3,28 @@ import { BadRequest } from "../utils/Errors.js";
 
 class ProjectService {
 
-  async getProjectsByAccountId(query) {
+  async getProjects(query) {
     const project = await dbContext.Projects.find(query)
+      .populate('creator', 'name email picture');
+    // .populate('members', 'name picture');
+    return project
+  }
+
+  async getProjectsByAccountId(creatorId) {
+    const project = await dbContext.Projects.find({ creatorId });
     // .populate('members', 'name picture');
     return project
   }
 
   async getProjectById(projectId) {
     const project = await dbContext.Projects.findById(projectId);
-    await project.populate('creator', 'name picture');
+    await project.populate('creator', 'name email picture');
     return project
   }
 
   async createProject(projectData) {
     const newProject = await dbContext.Projects.create(projectData);
-    await newProject.populate('creator', 'name picture');
+    await newProject.populate('creator', 'name email picture');
     return newProject
   }
 

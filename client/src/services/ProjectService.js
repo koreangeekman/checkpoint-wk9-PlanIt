@@ -5,9 +5,16 @@ import { api } from "./AxiosService.js";
 class ProjectService {
 
   async getProjectsByAccountId() {
-    const res = await api.get('api/projects')
+    const res = await api.get('api/projects/account')
     AppState.projects = res.data.map(proj => new Project(proj))
   }
+
+  async getProjectById(projectId) {
+    const res = await api.get('api/projects/' + projectId)
+    AppState.activeProject = new Project(res.data)
+  }
+
+
 
 }
 
