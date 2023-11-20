@@ -5,5 +5,7 @@ export class Note {
     this.description = data.description
     this.creatorId = data.creatorId
     this.creator = data.creator
+    this.createdAt = new Date(data.createdAt)
+    this.updatedAt = new Date(data.updatedAt)
   }
 }
