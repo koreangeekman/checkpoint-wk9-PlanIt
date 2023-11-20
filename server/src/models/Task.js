@@ -29,5 +29,5 @@ TaskSchema.virtual('sprint', {
   localField: "sprintId",
   foreignField: "_id",
   justOne: true,
-  ref: 'Spring'
+  ref: 'Sprint'
 })

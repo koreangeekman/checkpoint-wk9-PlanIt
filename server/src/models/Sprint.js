@@ -3,6 +3,8 @@ import { Schema } from "mongoose";
 export const SprintSchema = new Schema({
   name: { type: String, required: true, maxLength: 50 },
   isOpen: { type: Boolean, required: true, default: true },
+  startDate: { type: String, required: false },
+  endDate: { type: String, required: false },
   projectId: { type: Schema.Types.ObjectId, required: true, ref: 'Project' },
   creatorId: { type: Schema.Types.ObjectId, required: true, ref: 'Account' }
 

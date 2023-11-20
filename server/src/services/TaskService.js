@@ -11,14 +11,16 @@ class TaskService {
     return notes
   }
 
-  async createTask(taskData) {
+  async createTaskWithProjectId(taskData) {
     const newTask = await dbContext.Tasks.create(taskData);
     await newTask.populate('creator', 'name picture');
+    await newTask.populate('project');
+    await newTask.populate('sprint');
     return newTask
   }
 
-  async deleteTask(creatorId, _id) {
-    const task = await dbContext.Tasks.findOne({ creatorId, _id });
+  async deleteTaskWithProjectId(creatorId, projectId, _id) {
+    const task = await dbContext.Tasks.findOne({ creatorId, projectId, _id });
     if (!task) { throw new BadRequest('Cannot find the specified task with your ID') }
     await task.delete();
     return task
