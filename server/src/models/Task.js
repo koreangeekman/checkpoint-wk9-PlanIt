@@ -17,3 +17,17 @@ TaskSchema.virtual('creator', {
   justOne: true,
   ref: 'Account'
 })
+
+TaskSchema.virtual('project', {
+  localField: "projectId",
+  foreignField: "_id",
+  justOne: true,
+  ref: 'Project'
+})
+
+TaskSchema.virtual('sprint', {
+  localField: "sprintId",
+  foreignField: "_id",
+  justOne: true,
+  ref: 'Spring'
+})
