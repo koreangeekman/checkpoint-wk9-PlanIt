@@ -3,6 +3,12 @@ import { BadRequest } from "../utils/Errors.js";
 
 class ProjectService {
 
+  async getProjects(query) {
+    const project = await dbContext.Projects.find(query)
+      .populate('creator', 'name picture');
+    return project
+  }
+
   async getProjectById(projectId) {
     const project = await dbContext.Projects.findById(projectId);
     await project.populate('creator', 'name picture');
@@ -15,13 +21,12 @@ class ProjectService {
     return newProject
   }
 
-  async deleteProject(creatorId, projectId) {
-    const project = await dbContext.Projects.findOne({ creatorId, projectId });
+  async deleteProject(creatorId, _id) {
+    const project = await dbContext.Projects.findOne({ creatorId, _id });
     if (!project) { throw new BadRequest('Cannot find the project with your ID') }
     await project.delete();
     return project
   }
-
 
 
 }
