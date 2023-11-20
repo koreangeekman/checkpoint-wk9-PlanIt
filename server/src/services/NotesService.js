@@ -11,16 +11,19 @@ class NotesService {
     return notes
   }
 
-  async createNote(noteData) {
+  async createTaskWithProjectId(noteData) {
     const newNote = await dbContext.Notes.create(noteData);
+    await newNote.populate('creator', 'name email picture');
+    await newNote.populate('project');
+    await newNote.populate('task');
     return newNote
   }
 
-  async deleteProject(creatorId, _id) {
-    const project = await dbContext.Notes.findOne({ creatorId, _id });
-    if (!project) { throw new BadRequest('Cannot find the specified project with your ID') }
-    await project.delete();
-    return project
+  async deleteNoteWithProjectId(creatorId, projectId, _id) {
+    const note = await dbContext.Notes.findOne({ creatorId, projectId, _id });
+    if (!note) { throw new BadRequest('Cannot find the specified project with your ID') }
+    await note.delete();
+    return note
   }
 }
 

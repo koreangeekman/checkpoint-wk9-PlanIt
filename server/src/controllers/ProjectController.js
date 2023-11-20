@@ -3,6 +3,7 @@ import { projectService } from "../services/ProjectService.js";
 import BaseController from "../utils/BaseController.js";
 import { sprintService } from "../services/SprintService.js";
 import { taskService } from "../services/TaskService.js";
+import { notesService } from "../services/NotesService.js";
 
 export class ProjectController extends BaseController {
   constructor() {
@@ -12,14 +13,18 @@ export class ProjectController extends BaseController {
       .get('/:projectId', this.getProjectById)
       .get('/:projectId/sprints', this.getSprintsByProjectId)
       .get('/:projectId/tasks', this.getTasksByProjectId)
+      .get('/:projectId/notes', this.getNotesByProjectId)
       // 🔽 AUTHENTICATION REQUIRED BELOW 🔽
       .use(Auth0Provider.getAuthorizedUserInfo)
       .post('', this.createProject)
       .post('/:projectId/sprints', this.createSprintWithProjectId)
       .post('/:projectId/tasks', this.createTaskWithProjectId)
+      .post('/:projectId/notes', this.createNoteWithProjectId)
       .delete('/:projectId', this.deleteProject)
       .delete('/:projectId/sprints/:sprintId', this.deleteSprintWithProjectId)
       .delete('/:projectId/tasks/:taskId', this.deleteTaskWithProjectId)
+      .delete('/:projectId/notes/:noteId', this.deleteNoteWithProjectId)
+      .put('/:projectId/tasks/:taskId', this.updateTaskWithProjectId)
   }
 
   async getProjects(req, res, nxt) {
@@ -54,6 +59,14 @@ export class ProjectController extends BaseController {
     catch (error) { nxt(error) }
   }
 
+  async getNotesByProjectId(req, res, nxt) {
+    try {
+      const tasks = await notesService.getNotesByProjectId(req.params.projectId);
+      res.send(tasks)
+    }
+    catch (error) { nxt(error) }
+  }
+
   // SECTION 🔽 REQUIRES AUTHENTICATION 🔽
 
   async createProject(req, res, nxt) {
@@ -69,8 +82,8 @@ export class ProjectController extends BaseController {
     try {
       req.body.creatorId = req.userInfo.id;
       req.body.projectId = req.params.projectId;
-      const newProject = await sprintService.createSprintWithProjectId(req.body);
-      res.send(newProject)
+      const newSprint = await sprintService.createSprintWithProjectId(req.body);
+      res.send(newSprint)
     }
     catch (error) { nxt(error) }
   }
@@ -79,32 +92,58 @@ export class ProjectController extends BaseController {
     try {
       req.body.creatorId = req.userInfo.id;
       req.body.projectId = req.params.projectId;
-      const newProject = await taskService.createTaskWithProjectId(req.body);
-      res.send(newProject)
+      const newTask = await taskService.createTaskWithProjectId(req.body);
+      res.send(newTask)
+    }
+    catch (error) { nxt(error) }
+  }
+
+  async createNoteWithProjectId(req, res, nxt) {
+    try {
+      req.body.creatorId = req.userInfo.id;
+      req.body.projectId = req.params.projectId;
+      const newTask = await notesService.createTaskWithProjectId(req.body);
+      res.send(newTask)
     }
     catch (error) { nxt(error) }
   }
 
   async deleteProject(req, res, nxt) {
     try {
-      const newProject = await projectService.deleteProject(req.userInfo.id, req.params.projectId);
-      res.send(newProject)
+      const deleted = await projectService.deleteProject(req.userInfo.id, req.params.projectId);
+      res.send(deleted)
     }
     catch (error) { nxt(error) }
   }
 
   async deleteSprintWithProjectId(req, res, nxt) {
     try {
-      const newProject = await sprintService.deleteSprintWithProjectId(req.userInfo.id, req.params.projectId, req.params.sprintId);
-      res.send(newProject)
+      const deleted = await sprintService.deleteSprintWithProjectId(req.userInfo.id, req.params.projectId, req.params.sprintId);
+      res.send(deleted)
     }
     catch (error) { nxt(error) }
   }
 
   async deleteTaskWithProjectId(req, res, nxt) {
     try {
-      const newProject = await taskService.deleteTaskWithProjectId(req.userInfo.id, req.params.projectId, req.params.taskId);
-      res.send(newProject)
+      const deleted = await taskService.deleteTaskWithProjectId(req.userInfo.id, req.params.projectId, req.params.taskId);
+      res.send(deleted)
+    }
+    catch (error) { nxt(error) }
+  }
+
+  async deleteNoteWithProjectId(req, res, nxt) {
+    try {
+      const deleted = await notesService.deleteNoteWithProjectId(req.userInfo.id, req.params.projectId, req.params.noteId);
+      res.send(deleted)
+    }
+    catch (error) { nxt(error) }
+  }
+
+  async updateTaskWithProjectId(req, res, nxt) {
+    try {
+      const updatedTask = await taskService.updateTaskWithProjectId(req.userInfo.id, req.params.projectId, req.params.taskId, req.body);
+      res.send(updatedTask)
     }
     catch (error) { nxt(error) }
   }
