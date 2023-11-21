@@ -9,15 +9,26 @@
         </div>
       </section>
     </div>
+
+    <!-- ProjectList & ProjectSettings Offcanvas/Modal Buttons -->
     <div class="d-flex flex-column position-absolute ">
-      <button class="px-4 mb-2 fs-1 bg-primary text-white border-0 selectable darken-20">
+      <button data-bs-toggle="offcanvas" data-bs-target="#create-project" aria-controls="create-project"
+        class="px-4 mb-2 fs-1 bg-primary text-white border-0 selectable darken-20">
         P
       </button>
-      <button class="px-4 fs-1 bg-gray text-dark border-0 selectable lighten-30">
+      <button data-bs-toggle="offcanvas" data-bs-target="#edit-project" aria-controls="create-project"
+        class="px-4 fs-1 bg-gray text-dark border-0 selectable lighten-30">
         <i class="mdi mdi-cog"></i>
       </button>
     </div>
+
   </span>
+
+  <OffcanvasComponent :offcanvasId="'project-list'">
+    <template #offcanvasBody>
+      <ProjectList :showMembers="false" :createBtn="'bottom'" />
+    </template>
+  </OffcanvasComponent>
 </template>
 
 
@@ -27,6 +38,9 @@ import { useRoute } from "vue-router";
 import { computed, onMounted } from 'vue';
 import { AppState } from "../AppState.js";
 import { projectService } from '../services/ProjectService.js'
+import OffcanvasComponent from "../components/OffcanvasComponent.vue";
+import ProjectList from "../components/ProjectList.vue";
+import { onBeforeRouteUpdate } from "vue-router";
 
 export default {
   setup() {
@@ -45,20 +59,34 @@ export default {
       catch (error) { Pop.error(error); }
     }
 
+    // watchEffect(() => {
+    //   if (route.params.projectId) {
+    //     _getProjectById();
+    //     _getSprintsByProjectId();
+    //     _getTasksByProjectId();
+    //   }
+    // })
+
+    onBeforeRouteUpdate(() => {
+      _getProjectById();
+      _getSprintsByProjectId();
+      _getTasksByProjectId();
+    })
+
     onMounted(() => {
       if (AppState.activeProject.id != route.params.projectId) {
         _getProjectById();
         _getSprintsByProjectId();
         _getTasksByProjectId();
       }
-    })
+    });
 
     return {
       account: computed(() => AppState.account),
       activeProject: computed(() => AppState.activeProject),
-
-    }
-  }
+    };
+  },
+  components: { OffcanvasComponent, ProjectList }
 }
 </script>
 

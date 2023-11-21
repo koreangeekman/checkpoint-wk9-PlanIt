@@ -46,8 +46,7 @@ class TaskService {
   }
 
   async updateTask(creatorId, _id, taskUpdates) {
-    const updates = _sanitizeBody(taskUpdates);
-    logger.log('updates', creatorId, _id, taskUpdates)
+    // const updates = _sanitizeBody(taskUpdates);
     const updated = await dbContext.Tasks.findOne(
       { creatorId, _id }
       // { $set: updates },
@@ -60,7 +59,6 @@ class TaskService {
     updated.projectId = taskUpdates.projectId || updated.projectId
     await updated.save()
     // if (!updated) { throw new BadRequest('Cannot find the specified task with your ID') }
-    logger.log('updated', updated)
     return updated
   }
 
