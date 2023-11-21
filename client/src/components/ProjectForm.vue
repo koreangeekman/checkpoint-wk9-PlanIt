@@ -19,7 +19,6 @@ import Pop from "../utils/Pop.js";
 import { AppState } from '../AppState';
 import { computed, onMounted } from 'vue';
 import { projectService } from "../services/ProjectService.js";
-import { reference } from "@popperjs/core/index.js";
 
 export default {
   props: {

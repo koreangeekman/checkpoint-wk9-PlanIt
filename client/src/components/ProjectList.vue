@@ -15,7 +15,7 @@
           <div class="col-5">
             <p class="mb-0">NAME</p>
           </div>
-          <div class="col-4">
+          <div class="col-4" v-if="showMembers">
             <p class="mb-0">MEMBERS</p>
           </div>
           <div class="col-3">
@@ -25,7 +25,8 @@
 
         <hr>
 
-        <section v-for="project in projects" class="row px-3 py-2 shadow my-3">
+        <section v-for="project in projects" class="row px-3 py-2 shadow darken-30 selectable my-2"
+          @click="openProject(project)">
           <div class="col-5">
             <p class="mb-0 fs-5">{{ project.name }}</p>
           </div>
@@ -39,7 +40,7 @@
         </section>
 
         <section class="row">
-          <div class="col-12">
+          <div class="col-12 text-center pt-5 pb-3">
             <button v-if="createBtn == 'bottom'" class="btn btn-primary" type="button" data-bs-toggle="modal"
               data-bs-target="#create-project">Create Project</button>
           </div>
@@ -69,6 +70,7 @@
 
 <script>
 import Pop from "../utils/Pop.js";
+import { useRouter } from "vue-router";
 import { AppState } from "../AppState.js";
 import { computed, watchEffect } from 'vue';
 import { projectService } from '../services/ProjectService.js'
@@ -82,6 +84,8 @@ export default {
   },
 
   setup() {
+
+    const router = useRouter();
 
     watchEffect(() => {
       if (AppState.account.id) {
@@ -97,6 +101,14 @@ export default {
     return {
       account: computed(() => AppState.account),
       projects: computed(() => AppState.projects),
+
+      async openProject(projectObj) {
+        try {
+          router.push({ name: 'Project', params: { projectId: projectObj.id } });
+          await projectService.setActiveProject(projectObj);
+        }
+        catch (error) { Pop.error(error); }
+      }
 
     }
   },
