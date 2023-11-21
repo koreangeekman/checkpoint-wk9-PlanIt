@@ -14,15 +14,23 @@ async function _sanitizeBody(body) {
 }
 class TaskService {
 
-  async getTasksByProjectId(projectId) {
-    const notes = await dbContext.Tasks.find({ projectId })
+  async getTasks(query) {
+    const tasks = await dbContext.Tasks.find(query)
       .populate('creator', 'name picture')
       .populate('project')
       .populate('sprint');
-    return notes
+    return tasks
   }
 
-  async createTaskWithProjectId(taskData) {
+  async getTasksByProjectId(projectId) {
+    const tasks = await dbContext.Tasks.find({ projectId })
+      .populate('creator', 'name picture')
+      .populate('project')
+      .populate('sprint');
+    return tasks
+  }
+
+  async createTask(taskData) {
     const newTask = await dbContext.Tasks.create(taskData);
     await newTask.populate('creator', 'name picture');
     await newTask.populate('project');
@@ -30,16 +38,16 @@ class TaskService {
     return newTask
   }
 
-  async deleteTaskWithProjectId(creatorId, projectId, _id) {
-    const task = await dbContext.Tasks.findOne({ creatorId, projectId, _id });
+  async deleteTask(creatorId, _id) {
+    const task = await dbContext.Tasks.findOne({ creatorId, _id });
     if (!task) { throw new BadRequest('Cannot find the specified task with your ID') }
     await task.delete();
     return task
   }
 
-  async updateTaskWithProjectId(creatorId, projectId, _id, taskUpdates) {
+  async updateTask(creatorId, _id, taskUpdates) {
     const updates = _sanitizeBody(taskUpdates);
-    logger.log('updates', creatorId, projectId, _id, taskUpdates)
+    logger.log('updates', creatorId, _id, taskUpdates)
     const updated = await dbContext.Tasks.findOne(
       { creatorId, _id }
       // { $set: updates },

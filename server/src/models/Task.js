@@ -5,7 +5,7 @@ export const TaskSchema = new Schema({
   weight: { type: Number, required: true, max: 10 },
   isComplete: { type: Boolean, required: true, default: false },
   completedOn: { type: Date, required: false },
-  sprintId: { type: Schema.Types.ObjectId, required: true, ref: 'Sprint' },
+  sprintId: { type: Schema.Types.ObjectId, required: false, ref: 'Sprint' },
   projectId: { type: Schema.Types.ObjectId, required: true, ref: 'Project' },
   creatorId: { type: Schema.Types.ObjectId, required: true, ref: 'Account' },
 

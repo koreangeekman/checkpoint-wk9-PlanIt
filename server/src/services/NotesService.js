@@ -3,6 +3,14 @@ import { BadRequest } from "../utils/Errors.js";
 
 class NotesService {
 
+  // async getNotes(query) {
+  //   const notes = await dbContext.Notes.find(query)
+  //     .populate('creator', 'name email pictures')
+  //     .populate('project')
+  //     .populate('task')
+  //   return notes
+  // }
+
   async getNotesByProjectId(projectId) {
     const notes = await dbContext.Notes.find({ projectId })
       .populate('creator', 'name email pictures')
@@ -11,7 +19,7 @@ class NotesService {
     return notes
   }
 
-  async createTaskWithProjectId(noteData) {
+  async createNote(noteData) {
     const newNote = await dbContext.Notes.create(noteData);
     await newNote.populate('creator', 'name email picture');
     await newNote.populate('project');
@@ -19,8 +27,8 @@ class NotesService {
     return newNote
   }
 
-  async deleteNoteWithProjectId(creatorId, projectId, _id) {
-    const note = await dbContext.Notes.findOne({ creatorId, projectId, _id });
+  async deleteNote(creatorId, _id) {
+    const note = await dbContext.Notes.findOne({ creatorId, _id });
     if (!note) { throw new BadRequest('Cannot find the specified project with your ID') }
     await note.delete();
     return note
