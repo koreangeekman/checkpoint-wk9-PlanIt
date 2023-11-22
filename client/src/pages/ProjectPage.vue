@@ -1,7 +1,7 @@
 <template>
   <span class="position-relative">
     <div class="container-fluid px-5" v-if="activeProject?.id">
-      <section class="row p-md-5">
+      <section class="row p-md-5 pt-md-4">
         <div class="col-12 px-md-5">
           <span class="d-flex align-items-center">
             <p class="fs-1 fw-bold mb-0">
@@ -28,12 +28,13 @@
             Add Sprint
           </button>
         </div>
-        <section v-for="sprint in sprints" class="row p-3 px-md-5 py-md-4 my-1">
+
+        <section v-for="(sprint, i) in sprints" class="row p-3 px-md-5 py-md-4 my-2">
           <div class="col-12 bg-light shadow p-0 border border-primary rounded">
             <span class="d-flex align-items-center rounded-top py-3 px-4" type="button" data-bs-toggle="collapse"
               :data-bs-target="'#' + sprint.id" aria-expanded="false" :aria-controls="collapseId">
-              <i class="fs-1 mdi mdi-abacus"></i>
-              <p class="mb-0 mx-3 fw-bold fs-5"> {{ sprint.name }} </p>
+              <i class="fs-1 mdi mdi-abacus" :style="'color:' + _colorGen() + ';'"></i>
+              <p class="mb-0 mx-3 fw-bold fs-5">S{{ i + 1 }} - {{ sprint.name }} </p>
               <span class="text-primary fs-5 d-flex align-items-center ms-3 me-auto">
                 <p class="mb-0 fw-bold fs-5">{{ sprint.weight + 1 }}</p>
                 <i class="fs-2 mdi mdi-weight"></i>
@@ -42,7 +43,8 @@
                 <button class="btn btn-primary ps-3 py-0">
                   Add Task <i class="fs-5 mdi mdi-plus"></i>
                 </button>
-                <p class="mb-0 ms-3 fw-bold fs-5">{{ taskDone + '/' + tasks.length }} Tasks Complete</p>
+                <p class="mb-0 ms-3 fw-bold fs-5">{{ tasks.filter(task => task.isComplete).length + '/' + tasks.length }}
+                  Tasks Complete</p>
               </span>
             </span>
             <span class="rounded-bottom">
@@ -54,6 +56,7 @@
             </span>
           </div>
         </section>
+
       </section>
     </div>
 
@@ -104,6 +107,7 @@ import OffcanvasComponent from "../components/OffcanvasComponent.vue";
 import ModalComponent from "../components/ModalComponent.vue";
 import ProjectList from "../components/ProjectList.vue";
 import CollapseComponent from "../components/CollapseComponent.vue";
+import { logger } from "../utils/Logger.js";
 
 export default {
   setup() {
@@ -134,6 +138,16 @@ export default {
     //   }
     // })
 
+    function _colorGen() {
+      const hexArr = '0123456789abcdef'.split('');
+      let hexCode = ''
+      for (let i = 0; i < 6; i++) {
+        hexCode += hexArr[Math.floor(Math.random() * hexArr.length)];
+      }
+      logger.log('colorCode #' + hexCode)
+      return '#' + hexCode
+    }
+
     onBeforeRouteUpdate(() => {
       _getProjectById();
       _getSprintsByProjectId();
@@ -148,9 +162,11 @@ export default {
         _getTasksByProjectId();
         _getNotesByProjectId();
       }
+
     });
 
     return {
+      _colorGen,
       account: computed(() => AppState.account),
       activeProject: computed(() => AppState.activeProject),
       sprints: computed(() => AppState.sprints),
