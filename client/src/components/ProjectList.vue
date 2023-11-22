@@ -41,8 +41,8 @@
 
         <section class="row">
           <div class="col-12 text-center pt-5 pb-3">
-            <button v-if="createBtn == 'bottom'" class="btn btn-outline-primary" type="button" data-bs-toggle="modal"
-              data-bs-target="#createProject">Create Project</button>
+            <button v-if="createBtn == 'bottom'" class="btn btn-outline-primary" type="button" @click="showModal()">Create
+              Project</button>
           </div>
         </section>
 
@@ -58,6 +58,8 @@ import { useRouter } from "vue-router";
 import { AppState } from "../AppState.js";
 import { computed, watchEffect } from 'vue';
 import { projectService } from '../services/ProjectService.js'
+import { Modal } from "bootstrap";
+import { Offcanvas } from "bootstrap";
 
 export default {
   props: {
@@ -83,6 +85,11 @@ export default {
     return {
       account: computed(() => AppState.account),
       projects: computed(() => AppState.projects),
+
+      showModal() {
+        Offcanvas.getOrCreateInstance('#project-list').hide();
+        Modal.getOrCreateInstance('#createProject').show();
+      },
 
       async openProject(projectObj) {
         try {

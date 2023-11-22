@@ -18,6 +18,7 @@ export class ProjectController extends BaseController {
       .get('/:projectId/tasks', this.getTasksByProjectId)
       .get('/:projectId/notes', this.getNotesByProjectId)
       .post('', this.createProject)
+      .put('/:projectId', this.updateProject)
       .delete('/:projectId', this.deleteProject)
   }
 
@@ -76,6 +77,14 @@ export class ProjectController extends BaseController {
       req.body.creatorId = req.userInfo.id;
       const newProject = await projectService.createProject(req.body);
       res.send(newProject)
+    }
+    catch (error) { nxt(error) }
+  }
+
+  async updateProject(req, res, nxt) {
+    try {
+      const updated = await projectService.updateProject(req.userInfo.id, req.params.projectId, req.body);
+      res.send(updated)
     }
     catch (error) { nxt(error) }
   }

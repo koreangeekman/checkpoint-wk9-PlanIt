@@ -39,7 +39,7 @@ class ProjectService {
   }
 
   async updateProject(projectObj) {
-    const res = await api.put('api/projects/' + projectObj.id,);
+    const res = await api.put('api/projects/' + projectObj.id, projectObj);
     AppState.activeProject = new Project(res.data);
   }
 

@@ -28,6 +28,15 @@ class ProjectService {
     return newProject
   }
 
+  async updateProject(creatorId, _id, projData) {
+    const project = await dbContext.Projects.findOne({ creatorId, _id });
+    if (!project) { throw new BadRequest('Cannot find the project with your ID') }
+    project.name = projData.name || project.name;
+    project.description = projData.description || project.description;
+    await project.save();
+    return project
+  }
+
   async deleteProject(creatorId, _id) {
     const project = await dbContext.Projects.findOne({ creatorId, _id });
     if (!project) { throw new BadRequest('Cannot find the project with your ID') }

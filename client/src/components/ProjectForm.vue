@@ -10,7 +10,8 @@
       <textarea v-model="projectForm.description" id="description" name="description" class="form-control"
         placeholder="Description..." maxlength="500"></textarea>
     </div>
-    <button class="btn btn-outline-primary" type="submit">Create</button>
+    <button v-if="edit" class="btn btn-outline-primary" type="submit">Update</button>
+    <button v-else class="btn btn-outline-primary" type="submit">Create</button>
   </form>
 </template>
 
@@ -45,7 +46,10 @@ export default {
 
       async submitProject(projectObj) {
         try {
-          if (props.edit) { await projectService.updateProject(projectForm.value); }
+          if (props.edit) {
+            await projectService.updateProject(projectForm.value);
+            Modal.getOrCreateInstance('#editProject').hide();
+          }
           else {
             const newProj = await projectService.createProject(projectForm.value);
             router.push({ name: 'Project', params: { projectId: AppState.activeProject.id } });
