@@ -7,7 +7,7 @@
             <p class="fs-1 fw-bold mb-0">
               {{ activeProject.name }}
             </p>
-            <button class="btn selectable darken-20 mx-2 p-1 fs-1">
+            <button class="btn selectable darken-20 mx-2 p-1 fs-1" @click="deleteProject()">
               <i class="text-primary mdi mdi-delete-forever"></i>
             </button>
           </span>
@@ -39,7 +39,7 @@
           <div class="col-12 bg-light shadow p-0 border border-primary rounded">
             <span class="d-flex align-items-center rounded-top py-3 px-2 px-md-4" type="button" data-bs-toggle="collapse"
               :data-bs-target="'#' + sprint.id" aria-expanded="false" :aria-controls="collapseId">
-              <i class="fs-1 mdi mdi-abacus" :style="'color:' + _colorGen() + ';'"></i>
+              <i class="fs-1 mdi mdi-abacus" :style="'color:' + colorGen() + ';'"></i>
               <p class="mb-0 mx-3 fw-bold fs-5">S{{ i + 1 }} - {{ sprint.name }} </p>
               <span class="text-primary fs-5 d-flex align-items-center ms-3 me-auto">
                 <p class="mb-0 fw-bold fs-5">{{ sprint.weight + 1 }}</p>
@@ -64,7 +64,7 @@
                       <div class="col-12 d-flex align-items-center px-0 px-md-5">
                         <input type="checkbox" name="isComplete" id="isComplete" class="mx-3">
                         <p class="mb-0 px-3 py-1 rounded-pill bg-light shadow outline"
-                          :style="'border: 2px solid ' + _colorGen() + ';'">
+                          :style="'border: 2px solid ' + colorGen() + ';'">
                           {{ task.name }}
                         </p>
                         <i class="fs-3 mx-3 text-secondary mdi mdi-delete-forever" type="button"
@@ -117,7 +117,7 @@
         class="px-3 py-1 mb-2 fs-1 bg-primary text-white border-0 selectable darken-20">
         P
       </button>
-      <button data-bs-toggle="modal" data-bs-target="#edit-project" aria-controls="edit-project"
+      <button data-bs-toggle="modal" data-bs-target="#editProject" aria-controls="editProject"
         class="px-3 py-1 fs-1 bg-gray text-dark border-0 selectable lighten-30">
         <i class="mdi mdi-cog"></i>
       </button>
@@ -131,22 +131,15 @@
       <ProjectList :showMembers="false" :createBtn="'bottom'" />
     </template>
   </OffcanvasComponent>
-  <ModalComponent :modalId="'create-project'">
-    <template #modalTitle> Create Project </template>
-    <template #modalBody>
-      <ProjectForm :edit="false" />
-    </template>
-  </ModalComponent>
-  <ModalComponent :modalId="'edit-project'">
+
+  <ModalComponent :modalId="'editProject'">
     <template #modalTitle> Edit Project </template>
     <template #modalBody>
       <ProjectForm :edit="true" />
     </template>
-    <!-- <template #modalSubmit>
-      <button type="button" class="btn btn-outline-primary">{{ submitButton }}</button>
-    </template> -->
   </ModalComponent>
-  <ModalComponent :modalId="'create-sprint'">
+
+  <ModalComponent :modalId="'createSprint'">
     <template #modalTitle>
       Create Sprint
     </template>
@@ -163,7 +156,7 @@
 
 <script>
 import Pop from "../utils/Pop.js";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { AppState } from "../AppState.js";
 import { computed, onMounted, watchEffect } from 'vue';
 import { onBeforeRouteUpdate } from "vue-router";
@@ -174,10 +167,12 @@ import ProjectList from "../components/ProjectList.vue";
 import ProjectForm from '../components/ProjectForm.vue'
 import CollapseComponent from "../components/CollapseComponent.vue";
 import { logger } from "../utils/Logger.js";
+import { router } from "../router.js";
 
 export default {
   setup() {
     const route = useRoute();
+    const router = useRouter();
     async function _getProjectById() {
       try {
         await projectService.getProjectById(route.params.projectId);
@@ -210,15 +205,15 @@ export default {
         Pop.error(error);
       }
     }
-    watchEffect(() => {
-      if (route.params.projectId) {
-        _getProjectById();
-        _getSprintsByProjectId();
-        _getTasksByProjectId();
-        _getNotesByProjectId();
-      }
-    });
-    function _colorGen() {
+    // watchEffect(() => {
+    //   if (route.params.projectId) {
+    //     _getProjectById();
+    //     _getSprintsByProjectId();
+    //     _getTasksByProjectId();
+    //     _getNotesByProjectId();
+    //   }
+    // });
+    function colorGen() {
       const hexArr = '0123456789abcdef'.split('');
       let hexCode = '';
       for (let i = 0; i < 6; i++) {
@@ -227,27 +222,36 @@ export default {
       logger.log('colorCode #' + hexCode);
       return '#' + hexCode;
     }
-    // onBeforeRouteUpdate(() => {
-    //   _getProjectById();
-    //   _getSprintsByProjectId();
-    //   _getTasksByProjectId();
-    //   _getNotesByProjectId();
-    // })
-    // onMounted(() => {
-    //   if (AppState.activeProject.id != route.params.projectId) {
-    //     _getProjectById();
-    //     // _getSprintsByProjectId();
-    //     // _getTasksByProjectId();
-    //     // _getNotesByProjectId();
-    //   }
-    // });
+    onBeforeRouteUpdate(() => {
+      _getProjectById();
+      _getSprintsByProjectId();
+      _getTasksByProjectId();
+      _getNotesByProjectId();
+    })
+    onMounted(() => {
+      if (AppState.activeProject.id != route.params.projectId) {
+        _getProjectById();
+      }
+      _getSprintsByProjectId();
+      _getTasksByProjectId();
+      _getNotesByProjectId();
+    });
     return {
-      _colorGen,
+      colorGen,
       account: computed(() => AppState.account),
       activeProject: computed(() => AppState.activeProject),
       sprints: computed(() => AppState.sprints),
       tasks: computed(() => AppState.tasks),
       notes: computed(() => AppState.notes),
+
+      async deleteProject() {
+        try {
+          const yes = await Pop.confirm('Delete this project?');
+          if (!yes) { return }
+          await projectService.deleteProject();
+          router.push({ name: 'Projects' });
+        } catch (error) { Pop.error(error); }
+      },
 
     };
   },

@@ -7,7 +7,7 @@
           <p class="mb-0 text-secondary">A list of all the projects for {{ account.email }}</p>
         </span>
         <button v-if="createBtn == 'top'" class="btn btn-outline-primary" type="button" data-bs-toggle="modal"
-          data-bs-target="#create-project">Create Project</button>
+          data-bs-target="#createProject">Create Project</button>
       </div>
       <div class="col-12 mt-4 mt-md-5 p-0">
 
@@ -42,7 +42,7 @@
         <section class="row">
           <div class="col-12 text-center pt-5 pb-3">
             <button v-if="createBtn == 'bottom'" class="btn btn-outline-primary" type="button" data-bs-toggle="modal"
-              data-bs-target="#create-project">Create Project</button>
+              data-bs-target="#createProject">Create Project</button>
           </div>
         </section>
 
@@ -90,7 +90,7 @@ export default {
           await projectService.setActiveProject(projectObj);
         }
         catch (error) { Pop.error(error); }
-      }
+      },
 
     }
   },

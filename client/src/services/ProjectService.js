@@ -4,6 +4,7 @@ import { Sprint } from "../models/Sprint.js";
 import { Task } from "../models/Task.js";
 import { Note } from "../models/Note.js";
 import { api } from "./AxiosService.js";
+import { logger } from "../utils/Logger.js";
 
 class ProjectService {
 
@@ -30,6 +31,21 @@ class ProjectService {
   async getNotesByProjectId(projectId) {
     const res = await api.get('api/projects/' + projectId + '/notes');
     AppState.notes = res.data.map(note => new Note(note));
+  }
+
+  async createProject(projectObj) {
+    const res = await api.post('api/projects/', projectObj);
+    AppState.activeProject = new Project(res.data);
+  }
+
+  async updateProject(projectObj) {
+    const res = await api.put('api/projects/' + projectObj.id,);
+    AppState.activeProject = new Project(res.data);
+  }
+
+  async deleteProject() {
+    const res = await api.delete('api/projects/' + AppState.activeProject.id,);
+    logger.log('Project deleted.', res.data);
   }
 
 
