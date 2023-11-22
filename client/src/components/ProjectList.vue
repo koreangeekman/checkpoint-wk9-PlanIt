@@ -49,22 +49,6 @@
       </div>
     </section>
   </div>
-
-  <ModalComponent :modalId="'create-project'">
-    <template #modalTitle> Create Project </template>
-    <template #modalBody>
-      <ProjectForm :edit="false" />
-    </template>
-  </ModalComponent>
-  <ModalComponent :modalId="'edit-project'">
-    <template #modalTitle> Edit Project </template>
-    <template #modalBody>
-      <ProjectForm :edit="true" />
-    </template>
-    <!-- <template #modalSubmit>
-      <button type="button" class="btn btn-outline-primary">{{ submitButton }}</button>
-    </template> -->
-  </ModalComponent>
 </template>
 
 
@@ -74,8 +58,6 @@ import { useRouter } from "vue-router";
 import { AppState } from "../AppState.js";
 import { computed, watchEffect } from 'vue';
 import { projectService } from '../services/ProjectService.js'
-import ModalComponent from '../components/ModalComponent.vue'
-import ProjectForm from '../components/ProjectForm.vue'
 
 export default {
   props: {
@@ -112,7 +94,6 @@ export default {
 
     }
   },
-  components: { ModalComponent, ProjectForm }
 };
 </script>
 

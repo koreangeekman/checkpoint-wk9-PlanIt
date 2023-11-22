@@ -15,14 +15,19 @@
             <p class="">{{ activeProject.description }}</p>
           </small>
         </div>
-        <div class="col-12 ps-5 px-md-5 d-flex align-items-center justify-content-between">
-          <span class="">
+        <div class="col-12 ps-5 px-md-5 d-flex align-items-center">
+          <span v-if="sprints.length > 0" class="me-auto">
             <p class="mb-0 fs-5 fw-bold text-primary darken-20">Sprints</p>
             <small>
               <p class="mb-0">
                 Group your tasks into sprints for over-arching collections for better organization.
               </p>
             </small>
+          </span>
+          <span v-else class="">
+            <div class="d-flex pe-2">
+              <p class="m-2 px-3 py-2"> No sprints created </p>
+            </div>
           </span>
           <button class="btn btn-outline-primary text-nowrap mx-3 py-2 px-md-5" data-bs-toggle="modal"
             data-bs-target="#create-sprint">
@@ -44,11 +49,13 @@
                 <button class="btn btn-outline-primary ps-1 ps-md-3 py-0 text-nowrap">
                   Add Task <i class="fs-5 mdi mdi-plus"></i>
                 </button>
-                <p class="mb-0 ms-3 fw-bold fs-5">{{ tasks.filter(task => task.isComplete).length + '/' + tasks.length }}
-                  Tasks Complete</p>
+                <p v-if="tasks.length > 0" class="mb-0 ms-3 fw-bold fs-5">
+                  {{ tasks.filter(task => task.isComplete).length + '/' + tasks.length }} Tasks Complete
+                </p>
+                <p class="mb-0 ms-3 py-0"></p>
               </span>
             </span>
-            <span v-if="sprints.length > 0" class="rounded-bottom">
+            <span v-if="tasks.length > 0" class="rounded-bottom">
               <CollapseComponent :collapseId="sprint.id">
                 <template #collapseBody>
                   <div class="container-fluid">
@@ -100,17 +107,16 @@
             </span>
           </div>
         </section>
-
       </section>
     </div>
 
     <!-- ProjectList & ProjectSettings Offcanvas/Modal Buttons -->
     <div class="d-flex flex-column position-absolute buttons">
-      <button data-bs-toggle="offcanvas" data-bs-target="#create-project" aria-controls="create-project"
+      <button data-bs-toggle="offcanvas" data-bs-target="#project-list" aria-controls="project-list"
         class="px-3 py-1 mb-2 fs-1 bg-primary text-white border-0 selectable darken-20">
         P
       </button>
-      <button data-bs-toggle="offcanvas" data-bs-target="#edit-project" aria-controls="create-project"
+      <button data-bs-toggle="modal" data-bs-target="#edit-project" aria-controls="edit-project"
         class="px-3 py-1 fs-1 bg-gray text-dark border-0 selectable lighten-30">
         <i class="mdi mdi-cog"></i>
       </button>
@@ -124,8 +130,22 @@
       <ProjectList :showMembers="false" :createBtn="'bottom'" />
     </template>
   </OffcanvasComponent>
-
-  <ModalComponent>
+  <ModalComponent :modalId="'create-project'">
+    <template #modalTitle> Create Project </template>
+    <template #modalBody>
+      <ProjectForm :edit="false" />
+    </template>
+  </ModalComponent>
+  <ModalComponent :modalId="'edit-project'">
+    <template #modalTitle> Edit Project </template>
+    <template #modalBody>
+      <ProjectForm :edit="true" />
+    </template>
+    <!-- <template #modalSubmit>
+      <button type="button" class="btn btn-outline-primary">{{ submitButton }}</button>
+    </template> -->
+  </ModalComponent>
+  <ModalComponent :modalId="'create-sprint'">
     <template #modalTitle>
       Create Sprint
     </template>
@@ -150,30 +170,45 @@ import { projectService } from '../services/ProjectService.js'
 import OffcanvasComponent from "../components/OffcanvasComponent.vue";
 import ModalComponent from "../components/ModalComponent.vue";
 import ProjectList from "../components/ProjectList.vue";
+import ProjectForm from '../components/ProjectForm.vue'
 import CollapseComponent from "../components/CollapseComponent.vue";
 import { logger } from "../utils/Logger.js";
 
 export default {
   setup() {
     const route = useRoute();
-
     async function _getProjectById() {
-      try { await projectService.getProjectById(route.params.projectId); }
-      catch (error) { Pop.error(error); }
+      try {
+        await projectService.getProjectById(route.params.projectId);
+      }
+      catch (error) {
+        Pop.error(error);
+      }
     }
     async function _getSprintsByProjectId() {
-      try { await projectService.getSprintsByProjectId(route.params.projectId); }
-      catch (error) { Pop.error(error); }
+      try {
+        await projectService.getSprintsByProjectId(route.params.projectId);
+      }
+      catch (error) {
+        Pop.error(error);
+      }
     }
     async function _getTasksByProjectId() {
-      try { await projectService.getTasksByProjectId(route.params.projectId); }
-      catch (error) { Pop.error(error); }
+      try {
+        await projectService.getTasksByProjectId(route.params.projectId);
+      }
+      catch (error) {
+        Pop.error(error);
+      }
     }
     async function _getNotesByProjectId() {
-      try { await projectService.getNotesByProjectId(route.params.projectId); }
-      catch (error) { Pop.error(error); }
+      try {
+        await projectService.getNotesByProjectId(route.params.projectId);
+      }
+      catch (error) {
+        Pop.error(error);
+      }
     }
-
     watchEffect(() => {
       if (route.params.projectId) {
         _getProjectById();
@@ -181,25 +216,22 @@ export default {
         _getTasksByProjectId();
         _getNotesByProjectId();
       }
-    })
-
+    });
     function _colorGen() {
       const hexArr = '0123456789abcdef'.split('');
-      let hexCode = ''
+      let hexCode = '';
       for (let i = 0; i < 6; i++) {
         hexCode += hexArr[Math.floor(Math.random() * hexArr.length)];
       }
-      logger.log('colorCode #' + hexCode)
-      return '#' + hexCode
+      logger.log('colorCode #' + hexCode);
+      return '#' + hexCode;
     }
-
     // onBeforeRouteUpdate(() => {
     //   _getProjectById();
     //   _getSprintsByProjectId();
     //   _getTasksByProjectId();
     //   _getNotesByProjectId();
     // })
-
     // onMounted(() => {
     //   if (AppState.activeProject.id != route.params.projectId) {
     //     _getProjectById();
@@ -208,7 +240,6 @@ export default {
     //     // _getNotesByProjectId();
     //   }
     // });
-
     return {
       _colorGen,
       account: computed(() => AppState.account),
@@ -219,6 +250,7 @@ export default {
 
     };
   },
+  components: { ModalComponent, OffcanvasComponent, ProjectForm }
 }
 </script>
 
