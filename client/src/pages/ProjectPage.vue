@@ -48,7 +48,7 @@
                   Tasks Complete</p>
               </span>
             </span>
-            <span class="rounded-bottom">
+            <span v-if="sprints.length > 0" class="rounded-bottom">
               <CollapseComponent :collapseId="sprint.id">
                 <template #collapseBody>
                   <div class="container-fluid">
@@ -144,7 +144,7 @@
 import Pop from "../utils/Pop.js";
 import { useRoute } from "vue-router";
 import { AppState } from "../AppState.js";
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, watchEffect } from 'vue';
 import { onBeforeRouteUpdate } from "vue-router";
 import { projectService } from '../services/ProjectService.js'
 import OffcanvasComponent from "../components/OffcanvasComponent.vue";
@@ -174,13 +174,14 @@ export default {
       catch (error) { Pop.error(error); }
     }
 
-    // watchEffect(() => {
-    //   if (route.params.projectId) {
-    //     _getProjectById();
-    //     _getSprintsByProjectId();
-    //     _getTasksByProjectId();
-    //   }
-    // })
+    watchEffect(() => {
+      if (route.params.projectId) {
+        _getProjectById();
+        _getSprintsByProjectId();
+        _getTasksByProjectId();
+        _getNotesByProjectId();
+      }
+    })
 
     function _colorGen() {
       const hexArr = '0123456789abcdef'.split('');
@@ -192,22 +193,21 @@ export default {
       return '#' + hexCode
     }
 
-    onBeforeRouteUpdate(() => {
-      _getProjectById();
-      _getSprintsByProjectId();
-      _getTasksByProjectId();
-      _getNotesByProjectId();
-    })
+    // onBeforeRouteUpdate(() => {
+    //   _getProjectById();
+    //   _getSprintsByProjectId();
+    //   _getTasksByProjectId();
+    //   _getNotesByProjectId();
+    // })
 
-    onMounted(() => {
-      if (AppState.activeProject.id != route.params.projectId) {
-        _getProjectById();
-        _getSprintsByProjectId();
-        _getTasksByProjectId();
-        _getNotesByProjectId();
-      }
-
-    });
+    // onMounted(() => {
+    //   if (AppState.activeProject.id != route.params.projectId) {
+    //     _getProjectById();
+    //     // _getSprintsByProjectId();
+    //     // _getTasksByProjectId();
+    //     // _getNotesByProjectId();
+    //   }
+    // });
 
     return {
       _colorGen,
@@ -219,7 +219,6 @@ export default {
 
     };
   },
-  components: { OffcanvasComponent, ProjectList, ModalComponent, CollapseComponent }
 }
 </script>
 

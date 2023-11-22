@@ -17,8 +17,8 @@
             <input v-model="editable.picture" class="ms-2 form-control" type="url" id="picture" maxlength="256">
           </div>
           <div class="m-3 mt-0">
-            <label for="website">Website</label>
-            <input v-model="editable.website" class="ms-2 form-control" type="text" id="website" maxlength="64">
+            <label for="title">Title</label>
+            <input v-model="editable.title" class="ms-2 form-control" type="text" id="title" maxlength="64">
           </div>
         </section>
       </div>
@@ -33,8 +33,8 @@
             <input v-model="editable.linkedin" class="ms-2 form-control" type="url" id="linkedin" maxlength="64">
           </div>
           <div class="m-3 mt-0">
-            <label for="resume">Resume</label>
-            <input v-model="editable.resume" class="ms-2 form-control" type="url" id="resume" maxlength="64">
+            <label for="website">Website</label>
+            <input v-model="editable.website" class="ms-2 form-control" type="text" id="website" maxlength="64">
           </div>
         </section>
       </div>
