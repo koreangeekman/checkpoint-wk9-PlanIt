@@ -6,7 +6,7 @@
           <p class="mb-0 fw-bold fs-5 text-primary darken-20">Projects</p>
           <p class="mb-0 text-secondary">A list of all the projects for {{ account.email }}</p>
         </span>
-        <button v-if="createBtn == 'top'" class="btn btn-primary" type="button" data-bs-toggle="modal"
+        <button v-if="createBtn == 'top'" class="btn btn-outline-primary" type="button" data-bs-toggle="modal"
           data-bs-target="#create-project">Create Project</button>
       </div>
       <div class="col-12 mt-4 mt-md-5 p-0">
@@ -41,7 +41,7 @@
 
         <section class="row">
           <div class="col-12 text-center pt-5 pb-3">
-            <button v-if="createBtn == 'bottom'" class="btn btn-primary" type="button" data-bs-toggle="modal"
+            <button v-if="createBtn == 'bottom'" class="btn btn-outline-primary" type="button" data-bs-toggle="modal"
               data-bs-target="#create-project">Create Project</button>
           </div>
         </section>
@@ -62,7 +62,7 @@
       <ProjectForm :edit="true" />
     </template>
     <!-- <template #modalSubmit>
-      <button type="button" class="btn btn-primary">{{ submitButton }}</button>
+      <button type="button" class="btn btn-outline-primary">{{ submitButton }}</button>
     </template> -->
   </ModalComponent>
 </template>

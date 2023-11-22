@@ -1,8 +1,8 @@
 <template>
   <span class="position-relative">
-    <div class="container-fluid px-5" v-if="activeProject?.id">
-      <section class="row p-md-5 pt-md-4">
-        <div class="col-12 px-md-5">
+    <div class="container-fluid ps-5 px-md-5" v-if="activeProject?.id">
+      <section class="row p-0 p-md-5 pt-md-4">
+        <div class="col-12 ps-5 px-md-5">
           <span class="d-flex align-items-center">
             <p class="fs-1 fw-bold mb-0">
               {{ activeProject.name }}
@@ -15,7 +15,7 @@
             <p class="">{{ activeProject.description }}</p>
           </small>
         </div>
-        <div class="col-12 px-md-5 d-flex align-items-center justify-content-between">
+        <div class="col-12 ps-5 px-md-5 d-flex align-items-center justify-content-between">
           <span class="">
             <p class="mb-0 fs-5 fw-bold text-primary darken-20">Sprints</p>
             <small>
@@ -24,14 +24,15 @@
               </p>
             </small>
           </span>
-          <button class="btn btn-primary mx-3 py-2 px-md-5" data-bs-toggle="modal" data-bs-target="#create-sprint">
+          <button class="btn btn-outline-primary text-nowrap mx-3 py-2 px-md-5" data-bs-toggle="modal"
+            data-bs-target="#create-sprint">
             Add Sprint
           </button>
         </div>
 
-        <section v-for="(sprint, i) in sprints" class="row p-3 px-md-5 py-md-4 my-2">
+        <section v-for="(sprint, i) in sprints" class="row p-0 px-md-5 py-md-4 my-2">
           <div class="col-12 bg-light shadow p-0 border border-primary rounded">
-            <span class="d-flex align-items-center rounded-top py-3 px-4" type="button" data-bs-toggle="collapse"
+            <span class="d-flex align-items-center rounded-top py-3 px-2 px-md-4" type="button" data-bs-toggle="collapse"
               :data-bs-target="'#' + sprint.id" aria-expanded="false" :aria-controls="collapseId">
               <i class="fs-1 mdi mdi-abacus" :style="'color:' + _colorGen() + ';'"></i>
               <p class="mb-0 mx-3 fw-bold fs-5">S{{ i + 1 }} - {{ sprint.name }} </p>
@@ -40,7 +41,7 @@
                 <i class="fs-2 mdi mdi-weight"></i>
               </span>
               <span class="d-flex">
-                <button class="btn btn-primary ps-3 py-0">
+                <button class="btn btn-outline-primary ps-1 ps-md-3 py-0 text-nowrap">
                   Add Task <i class="fs-5 mdi mdi-plus"></i>
                 </button>
                 <p class="mb-0 ms-3 fw-bold fs-5">{{ tasks.filter(task => task.isComplete).length + '/' + tasks.length }}
@@ -50,7 +51,50 @@
             <span class="rounded-bottom">
               <CollapseComponent :collapseId="sprint.id">
                 <template #collapseBody>
-                  boop
+                  <div class="container-fluid">
+                    <section v-for="task in tasks" class="row">
+                      <div class="col-12 d-flex align-items-center px-0 px-md-5">
+                        <input type="checkbox" name="isComplete" id="isComplete" class="mx-3">
+                        <p class="mb-0 px-3 py-1 rounded-pill bg-light shadow outline"
+                          :style="'border: 2px solid ' + _colorGen() + ';'">
+                          {{ task.name }}
+                        </p>
+                        <i class="fs-3 mx-3 text-secondary mdi mdi-delete-forever" type="button"
+                          @click="deleteTask(task.id)"></i>
+                      </div>
+                      <div class="col-10 px-4 px-md-5 py-3 d-flex">
+                        <div class="vert me-4 mx-md-4 ps-1"></div>
+                        <span class="d-block">
+                          <small class="d-flex align-items-center text-secondary mb-2">
+                            <i class=" me-2 fs-5 mdi mdi-run"></i>
+                            <span class="d-flex">
+                              <p class="mb-0 text-nowrap">Created - {{ task.createdAt.toLocaleDateString() }}</p>
+                              <span v-if="task.isComplete" class="d-flex">
+                                <p class="mb-0 mx-2">|</p>
+                                <p class="mb-0 text-nowrap">Completed - {{ task.completedOn.toLocaleDateString() }}</p>
+                              </span>
+                            </span>
+                          </small>
+                          <div class="d-flex align-items-center text-secondary mx-1">
+                            <span class="fs-5 d-flex align-items-center">
+                              <p class="mb-1"> {{ notes.length }} </p>
+                              <i class="mx-2 mdi mdi-message-reply-text"></i>
+                            </span>
+                            <span class="fs-5 ms-4 d-flex align-items-center">
+                              <p class="mb-1"> {{ task.weight }} </p>
+                              <i class="fs-4 mx-2 mdi mdi-weight"></i>
+                            </span>
+                          </div>
+                        </span>
+                      </div>
+                      <div class="col-12 col-md-2 d-flex justify-content-end justify-content-md-end align-items-end p-0">
+                        <button class="btn selectable text-primary d-flex align-items-center">
+                          Delete Sprint {{ i + 1 }}
+                          <i class="fs-3 ms-2 mdi mdi-delete-forever"></i>
+                        </button>
+                      </div>
+                    </section>
+                  </div>
                 </template>
               </CollapseComponent>
             </span>
@@ -61,13 +105,13 @@
     </div>
 
     <!-- ProjectList & ProjectSettings Offcanvas/Modal Buttons -->
-    <div class="d-flex flex-column position-absolute ">
+    <div class="d-flex flex-column position-absolute buttons">
       <button data-bs-toggle="offcanvas" data-bs-target="#create-project" aria-controls="create-project"
-        class="px-4 mb-2 fs-1 bg-primary text-white border-0 selectable darken-20">
+        class="px-3 py-1 mb-2 fs-1 bg-primary text-white border-0 selectable darken-20">
         P
       </button>
       <button data-bs-toggle="offcanvas" data-bs-target="#edit-project" aria-controls="create-project"
-        class="px-4 fs-1 bg-gray text-dark border-0 selectable lighten-30">
+        class="px-3 py-1 fs-1 bg-gray text-dark border-0 selectable lighten-30">
         <i class="mdi mdi-cog"></i>
       </button>
     </div>
@@ -89,7 +133,7 @@
       <form @submit.prevent="createSprint()">
         <label for="name">Name</label>
         <input type="text" class="form-control" maxlength="50" placeholder="Name..." required>
-        <button class="btn btn-primary" type="submit">Create</button>
+        <button class="btn btn-outline-primary" type="submit">Create</button>
       </form>
     </template>
   </ModalComponent>
@@ -181,12 +225,21 @@ export default {
 
 
 <style scoped lang="scss">
+input[type=checkbox] {
+  height: 1.5rem;
+  width: 1.5rem;
+}
+
 .courier {
   font-family: 'Courier New', Courier, monospace;
 }
 
 .fs-1 {
   line-height: 2.4rem;
+}
+
+.mdi-plus {
+  line-height: 1rem;
 }
 
 .memberImg {
@@ -197,5 +250,14 @@ export default {
 
 .projectOwner {
   border: 2px solid blue;
+}
+
+.buttons {
+  top: 2rem;
+}
+
+.vert {
+  border-right: 1px solid grey;
+  height: 100%;
 }
 </style>

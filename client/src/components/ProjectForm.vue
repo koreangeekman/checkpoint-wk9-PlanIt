@@ -9,7 +9,7 @@
       <textarea id="description" name="description" class="form-control" placeholder="Description..."
         maxlength="500"></textarea>
     </div>
-    <button class="btn btn-primary" type="submit">Create</button>
+    <button class="btn btn-outline-primary" type="submit">Create</button>
   </form>
 </template>
 

@@ -3,8 +3,9 @@ export class Sprint {
     this.id = data.id || data._id
     this.name = data.name
     this.isOpen = data.isOpen
-    this.startDate = data.startDate
-    this.endDate = data.endDate
+    this.weight = data.weight || 0
+    this.startDate = new Date(data.startDate)
+    this.endDate = new Date(data.endDate)
     this.projectId = data.projectId
     this.project = data.project
     this.creatorId = data.creatorId
