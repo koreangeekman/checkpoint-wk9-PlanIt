@@ -55,6 +55,7 @@
                 <p class="mb-0 ms-3 py-0"></p>
               </span>
             </span>
+
             <span v-if="tasks.length > 0" class="rounded-bottom">
               <CollapseComponent :collapseId="sprint.id">
                 <template #collapseBody>
@@ -250,7 +251,7 @@ export default {
 
     };
   },
-  components: { ModalComponent, OffcanvasComponent, ProjectForm }
+  components: { ModalComponent, OffcanvasComponent, ProjectList, ProjectForm }
 }
 </script>
 

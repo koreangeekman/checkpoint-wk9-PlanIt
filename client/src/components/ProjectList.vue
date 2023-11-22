@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid">
-    <section class="row card bg-light shadow p-3 px-md-5 py-md-4">
+    <section class="row pe-3">
       <div class="col-12 d-flex justify-content-between align-items-center">
         <span class="">
           <p class="mb-0 fw-bold fs-5 text-primary darken-20">Projects</p>
@@ -11,31 +11,31 @@
       </div>
       <div class="col-12 mt-4 mt-md-5 p-0">
 
-        <section class="row px-3 text-primary darken-20">
-          <div class="col-5">
+        <section class="d-flex px-3 text-primary darken-20">
+          <div class="me-auto">
             <p class="mb-0">NAME</p>
           </div>
-          <div class="col-4" v-if="showMembers">
+          <div class="d-none d-md-inline" v-if="showMembers">
             <p class="mb-0">MEMBERS</p>
           </div>
-          <div class="col-3">
+          <div class="ms-auto">
             <p class="mb-0">STARTED</p>
           </div>
         </section>
 
         <hr>
 
-        <section v-for="project in projects" class="row px-3 py-2 shadow darken-30 selectable my-2"
+        <section v-for="project in projects" class="d-flex px-3 py-2 shadow darken-30 selectable"
           @click="openProject(project)">
-          <div class="col-5">
+          <div class="me-auto p-0 me-auto">
             <p class="mb-0 fs-5">{{ project.name }}</p>
           </div>
-          <div class="col-4" v-if="showMembers">
+          <div class="d-none d-md-inline" v-if="showMembers">
             <img v-for="member in project.members" :src="member.picture" :alt="member.name" :title="member.name"
               class="memberImg rounded-circle" :class="member.name == project.creator.name ? 'projectOwner' : ''">
           </div>
-          <div class="col-3">
-            <p class="mb-0 courier">{{ project.createdAt.toLocaleDateString() }}</p>
+          <div class="ms-auto">
+            <p class="mb-0 courier text-nowrap">{{ project.createdAt.toLocaleDateString() }}</p>
           </div>
         </section>
 
