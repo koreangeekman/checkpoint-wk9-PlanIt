@@ -11,5 +11,11 @@ export const AppState = reactive({
   /** @type {import('./models/Project.js').Project} */
   activeProject: {},
 
+  /** @type {import('./models/Sprint.js').Sprint[]} */
+  sprints: {},
+  /** @type {import('./models/Task.js').Task[]} */
+  tasks: {},
+  /** @type {import('./models/Note.js').Note[]} */
+  notes: {},
 
 })
