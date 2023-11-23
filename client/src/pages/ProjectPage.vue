@@ -38,7 +38,7 @@
         <section v-for="(sprint, i) in sprints" class="row p-0 px-md-5 py-md-4 my-2">
           <div class="col-12 bg-light shadow p-0 border border-primary rounded">
             <span class="d-flex align-items-center rounded-top py-3 px-2 px-md-4" type="button" data-bs-toggle="collapse"
-              :data-bs-target="'#' + sprint.id" aria-expanded="false" :aria-controls="collapseId">
+              :data-bs-target="'#' + sprint.id" aria-expanded="false" :aria-controls="sprint.id">
               <i class="fs-1 mdi mdi-abacus" :style="'color:' + colorGen() + ';'"></i>
               <p class="mb-0 mx-3 fw-bold fs-5">S{{ i + 1 }} - {{ sprint.name }} </p>
               <span class="text-primary fs-5 d-flex align-items-center ms-3 me-auto">
@@ -126,85 +126,78 @@
   </span>
 
   <!-- ProjectList & ProjectSettings Offcanvas/Modal Buttons -->
-  <OffcanvasComponent :offcanvasId="'project-list'">
-    <template #offcanvasBody>
-      <ProjectList :showMembers="false" :createBtn="'bottom'" />
-    </template>
-  </OffcanvasComponent>
+  <span v-if="account">
 
-  <ModalComponent :modalId="'editProject'">
-    <template #modalTitle> Edit Project </template>
-    <template #modalBody>
-      <ProjectForm :edit="true" />
-    </template>
-  </ModalComponent>
+    <OffcanvasComponent :offcanvasId="'project-list'">
+      <template #offcanvasBody>
+        <ProjectList :showMembers="false" :createBtn="'bottom'" />
+      </template>
+    </OffcanvasComponent>
 
-  <ModalComponent :modalId="'createSprint'">
-    <template #modalTitle>
-      Create Sprint
-    </template>
-    <template #modalBody>
-      <form @submit.prevent="createSprint()">
-        <label for="name">Name</label>
-        <input type="text" class="form-control" maxlength="50" placeholder="Name..." required>
-        <button class="btn btn-outline-primary" type="submit">Create</button>
-      </form>
-    </template>
-  </ModalComponent>
+    <span v-if="activeProject">
+      <ModalComponent :modalId="'editProject'">
+        <template #modalTitle> Edit Project </template>
+        <template #modalBody>
+          <ProjectForm :edit="true" />
+        </template>
+      </ModalComponent>
+    </span>
+
+    <span v-if="activeProject">
+      <ModalComponent :modalId="'createSprint'">
+        <template #modalTitle>
+          Create Sprint
+        </template>
+        <template #modalBody>
+          <form @submit.prevent="createSprint()">
+            <label for="name">Name</label>
+            <input type="text" class="form-control" maxlength="50" name="name" placeholder="Name..." required>
+            <button class="btn btn-outline-primary" type="submit">Create</button>
+          </form>
+        </template>
+      </ModalComponent>
+    </span>
+
+  </span>
 </template>
 
 
 <script>
 import Pop from "../utils/Pop.js";
-import { useRoute, useRouter } from "vue-router";
 import { AppState } from "../AppState.js";
 import { computed, onMounted, watchEffect } from 'vue';
-import { onBeforeRouteUpdate } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { projectService } from '../services/ProjectService.js'
 import OffcanvasComponent from "../components/OffcanvasComponent.vue";
+import CollapseComponent from "../components/CollapseComponent.vue";
 import ModalComponent from "../components/ModalComponent.vue";
 import ProjectList from "../components/ProjectList.vue";
 import ProjectForm from '../components/ProjectForm.vue'
-import CollapseComponent from "../components/CollapseComponent.vue";
 import { logger } from "../utils/Logger.js";
-import { router } from "../router.js";
 
 export default {
   setup() {
     const route = useRoute();
     const router = useRouter();
+
     async function _getProjectById() {
-      try {
-        await projectService.getProjectById(route.params.projectId);
-      }
-      catch (error) {
-        Pop.error(error);
-      }
+      try { await projectService.getProjectById(route.params.projectId); }
+      catch (error) { Pop.error(error); }
     }
+
     async function _getSprintsByProjectId() {
-      try {
-        await projectService.getSprintsByProjectId(route.params.projectId);
-      }
-      catch (error) {
-        Pop.error(error);
-      }
+      try { await projectService.getSprintsByProjectId(route.params.projectId); }
+      catch (error) { Pop.error(error); }
     }
     async function _getTasksByProjectId() {
-      try {
-        await projectService.getTasksByProjectId(route.params.projectId);
-      }
-      catch (error) {
-        Pop.error(error);
-      }
+      try { await projectService.getTasksByProjectId(route.params.projectId); }
+      catch (error) { Pop.error(error); }
     }
     async function _getNotesByProjectId() {
-      try {
-        await projectService.getNotesByProjectId(route.params.projectId);
-      }
-      catch (error) {
-        Pop.error(error);
-      }
+      try { await projectService.getNotesByProjectId(route.params.projectId); }
+      catch (error) { Pop.error(error); }
     }
+
     // watchEffect(() => {
     //   if (route.params.projectId) {
     //     _getProjectById();
@@ -213,6 +206,7 @@ export default {
     //     _getNotesByProjectId();
     //   }
     // });
+
     function colorGen() {
       const hexArr = '0123456789abcdef'.split('');
       let hexCode = '';
@@ -222,24 +216,20 @@ export default {
       logger.log('colorCode #' + hexCode);
       return '#' + hexCode;
     }
-    onBeforeRouteUpdate(() => {
-      _getProjectById();
-      _getSprintsByProjectId();
-      _getTasksByProjectId();
-      _getNotesByProjectId();
-    })
-    onMounted(() => {
-      if (AppState.activeProject.id != route.params.projectId) {
-        _getProjectById();
-      }
-      _getSprintsByProjectId();
-      _getTasksByProjectId();
-      _getNotesByProjectId();
-    });
+
+    // onMounted(() => {
+    //   if (AppState.activeProject.id != route.params.projectId) {
+    //     _getProjectById();
+    //     _getSprintsByProjectId();
+    //     _getTasksByProjectId();
+    //     _getNotesByProjectId();
+    //   }
+    // });
     return {
       colorGen,
       account: computed(() => AppState.account),
       activeProject: computed(() => AppState.activeProject),
+      projects: computed(() => AppState.projects),
       sprints: computed(() => AppState.sprints),
       tasks: computed(() => AppState.tasks),
       notes: computed(() => AppState.notes),
@@ -255,7 +245,7 @@ export default {
 
     };
   },
-  components: { ModalComponent, OffcanvasComponent, ProjectList, ProjectForm }
+  components: { ModalComponent, OffcanvasComponent, CollapseComponent, ProjectList, ProjectForm }
 }
 </script>
 

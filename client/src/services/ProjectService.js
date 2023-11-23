@@ -49,8 +49,6 @@ class ProjectService {
   }
 
 
-
-
   async setActiveProject(projectObj) {
     AppState.activeProject = projectObj;
     await this.getProjectById(projectObj.id);

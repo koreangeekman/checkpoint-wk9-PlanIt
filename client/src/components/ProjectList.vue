@@ -54,12 +54,11 @@
 
 <script>
 import Pop from "../utils/Pop.js";
-import { useRouter } from "vue-router";
 import { AppState } from "../AppState.js";
 import { computed, watchEffect } from 'vue';
+import { Offcanvas, Modal } from "bootstrap";
 import { projectService } from '../services/ProjectService.js'
-import { Modal } from "bootstrap";
-import { Offcanvas } from "bootstrap";
+import { useRoute, useRouter, onBeforeRouteUpdate } from "vue-router";
 
 export default {
   props: {
@@ -69,11 +68,18 @@ export default {
 
   setup() {
 
+    const route = useRoute();
     const router = useRouter();
 
-    watchEffect(() => {
+    watchEffect(async () => {
       if (AppState.account.id) {
         _getProjectsByAccountId();
+        if (route.params.projectId) {
+          _getProjectById(route.params.projectId);
+          _getSprintsByProjectId(route.params.projectId);
+          _getTasksByProjectId(route.params.projectId);
+          _getNotesByProjectId(route.params.projectId);
+        }
       }
     })
 
@@ -81,6 +87,35 @@ export default {
       try { await projectService.getProjectsByAccountId(); }
       catch (error) { Pop.error(error); }
     }
+
+    async function _setActiveProject(projectObj) {
+      try { await projectService.setActiveProject(projectObj); }
+      catch (error) { Pop.error(error); }
+    }
+
+    async function _getProjectById(projectId) {
+      try { await projectService.getProjectById(projectId); }
+      catch (error) { Pop.error(error); }
+    }
+    async function _getSprintsByProjectId(projectId) {
+      try { await projectService.getSprintsByProjectId(projectId); }
+      catch (error) { Pop.error(error); }
+    }
+    async function _getTasksByProjectId(projectId) {
+      try { await projectService.getTasksByProjectId(projectId); }
+      catch (error) { Pop.error(error); }
+    }
+    async function _getNotesByProjectId(projectId) {
+      try { await projectService.getNotesByProjectId(projectId); }
+      catch (error) { Pop.error(error); }
+    }
+
+    // onBeforeRouteUpdate(() => {
+    //   _getProjectById();
+    //   _getSprintsByProjectId();
+    //   _getTasksByProjectId();
+    //   _getNotesByProjectId();
+    // })
 
     return {
       account: computed(() => AppState.account),
@@ -93,8 +128,14 @@ export default {
 
       async openProject(projectObj) {
         try {
+          _setActiveProject(projectObj);
+          if (router.name == 'Project') {
+            Offcanvas.getOrCreateInstance('#project-list').hide();
+          }
           router.push({ name: 'Project', params: { projectId: projectObj.id } });
-          await projectService.setActiveProject(projectObj);
+          _getSprintsByProjectId(projectObj.id);
+          _getTasksByProjectId(projectObj.id);
+          _getNotesByProjectId(projectObj.id);
         }
         catch (error) { Pop.error(error); }
       },
