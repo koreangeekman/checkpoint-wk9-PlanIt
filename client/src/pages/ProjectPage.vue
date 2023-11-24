@@ -42,7 +42,7 @@
               <i class="fs-1 mdi mdi-abacus" :style="'color:' + colorGen() + ';'"></i>
               <p class="mb-0 mx-3 fw-bold fs-5">S{{ i + 1 }} - {{ sprint.name }} </p>
               <span class="text-primary fs-5 d-flex align-items-center ms-3 me-auto">
-                <p class="mb-0 fw-bold fs-5">{{ sprint.weight + 1 }}</p>
+                <p class="mb-0 fw-bold fs-5">{{ calcWeight(sprint.id) }}</p>
                 <i class="fs-2 mdi mdi-weight"></i>
               </span>
               <span class="d-flex">
@@ -315,6 +315,16 @@ export default {
       expandSprint(collapseId) {
         Collapse.getOrCreateInstance(collapseId).show();
         Collapse.getOrCreateInstance(collapseId).hide();
+      },
+
+      calcWeight(sprintId) {
+        let total = 0;
+        this.tasks.forEach(task => {
+          if (task.sprintId == sprintId) {
+            total += task.weight
+          }
+        });
+        return total
       },
 
     };
