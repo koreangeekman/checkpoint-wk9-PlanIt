@@ -10,8 +10,13 @@ class SprintService {
   }
 
   async createSprint(sprintData) {
-    const res = await api.post('api/sprints', sprintData);
+    const res = await api.post('api/sprints/', sprintData);
     AppState.sprints.push(new Sprint(res.data));
+  }
+
+  async deleteSprint(sprintId) {
+    const res = await api.delete('api/sprints/' + sprintId);
+    AppState.sprints = AppState.sprints.filter(sprint => sprint.id != sprintId);
   }
 
 }

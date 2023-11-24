@@ -57,10 +57,10 @@
               </span>
             </span>
 
-            <span v-if="tasks.filter(task => task.sprintId == sprint.id).length > 0" class="rounded-bottom">
+            <span class="rounded-bottom">
               <CollapseComponent :collapseId="sprint.id">
                 <template #collapseBody>
-                  <div class="container-fluid">
+                  <div v-if="tasks.filter(task => task.sprintId == sprint.id).length > 0" class="container-fluid">
                     <section v-for="task in tasks.filter(task => task.sprintId == sprint.id)" class="row">
                       <div class="col-12 d-flex align-items-center px-0 px-md-5">
                         <input type="checkbox" name="isComplete" id="isComplete" class="mx-3">
@@ -96,14 +96,14 @@
                           </div>
                         </span>
                       </div>
-                      <div class="col-12 col-md-2 d-flex justify-content-end justify-content-md-end align-items-end p-0">
-                        <button class="btn selectable text-primary d-flex align-items-center"
-                          @click="deleteSprint(sprint.id)">
-                          Delete Sprint {{ i + 1 }}
-                          <i class="fs-3 ms-2 mdi mdi-delete-forever"></i>
-                        </button>
-                      </div>
                     </section>
+                  </div>
+                  <div class="W-100 d-flex justify-content-end justify-content-md-end align-items-end p-0">
+                    <button class="btn selectable text-primary d-flex align-items-center"
+                      @click="deleteSprint(sprint.id)">
+                      Delete Sprint {{ i + 1 }}
+                      <i class="fs-3 ms-2 mdi mdi-delete-forever"></i>
+                    </button>
                   </div>
                 </template>
               </CollapseComponent>
@@ -194,6 +194,7 @@
 <script>
 import Pop from "../utils/Pop.js";
 import { AppState } from "../AppState.js";
+import { Collapse, Modal } from "bootstrap";
 import { computed, watchEffect, ref } from 'vue';
 import { useRoute, useRouter } from "vue-router";
 import { projectService } from '../services/ProjectService.js'
@@ -205,7 +206,6 @@ import ModalComponent from "../components/ModalComponent.vue";
 import ProjectList from "../components/ProjectList.vue";
 import ProjectForm from '../components/ProjectForm.vue'
 import { logger } from "../utils/Logger.js";
-import { Collapse, Modal } from "bootstrap";
 
 export default {
   setup() {
@@ -253,15 +253,6 @@ export default {
       return '#' + hexCode;
     }
 
-    // onMounted(() => {
-    //   if (AppState.activeProject.id != route.params.projectId) {
-    //     _getProjectById();
-    //     _getSprintsByProjectId();
-    //     _getTasksByProjectId();
-    //     _getNotesByProjectId();
-    //   }
-    // });
-
     return {
       sprintForm,
       taskForm,
@@ -281,6 +272,20 @@ export default {
           router.push({ name: 'Projects' });
         } catch (error) { Pop.error(error); }
       },
+      async deleteSprint(sprintId) {
+        try {
+          const yes = await Pop.confirm('Delete this sprint?');
+          if (!yes) { return }
+          await sprintService.deleteSprint(sprintId);
+        } catch (error) { Pop.error(error); }
+      },
+      async deleteTask(taskId) {
+        try {
+          const yes = await Pop.confirm('Delete this task?');
+          if (!yes) { return }
+          await taskService.deleteTask(taskId);
+        } catch (error) { Pop.error(error); }
+      },
 
       async createSprint() {
         try {
@@ -291,10 +296,13 @@ export default {
         }
         catch (error) { Pop.error(error); }
       },
-
-      expandSprint(collapseId) {
-        Collapse.getOrCreateInstance(collapseId).show();
-        Collapse.getOrCreateInstance(collapseId).hide();
+      async createTask() {
+        try {
+          await taskService.createTask(taskForm.value);
+          taskForm.value = {};
+          Modal.getOrCreateInstance('#createTask').hide();
+        }
+        catch (error) { Pop.error(error); }
       },
 
       addTask(sprintObj) {
@@ -304,13 +312,9 @@ export default {
         Modal.getOrCreateInstance('#createTask').show();
       },
 
-      async createTask() {
-        try {
-          await taskService.createTask(taskForm.value);
-          taskForm.value = {};
-          Modal.getOrCreateInstance('#createTask').hide();
-        }
-        catch (error) { Pop.error(error); }
+      expandSprint(collapseId) {
+        Collapse.getOrCreateInstance(collapseId).show();
+        Collapse.getOrCreateInstance(collapseId).hide();
       },
 
     };
