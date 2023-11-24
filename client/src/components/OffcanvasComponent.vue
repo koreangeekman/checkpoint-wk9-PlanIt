@@ -1,5 +1,6 @@
 <template>
-  <div class="offcanvas offcanvas-start" tabindex="-1" :id="offcanvasId" :aria-labelledby="offcanvasId + 'Label'">
+  <div class="offcanvas" :class="'offcanvas-' + location" tabindex="-1" :id="offcanvasId"
+    :aria-labelledby="offcanvasId + 'Label'">
     <div class="offcanvas-header">
       <h5 class="offcanvas-title" :id="offcanvasId + 'Label'">
         <slot name="offcanvasTitle"></slot>
@@ -20,7 +21,7 @@
 export default {
   props: {
     offcanvasId: { type: String },
-
+    location: { type: String, default: 'start' }
   },
 
   setup() {

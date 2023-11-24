@@ -20,7 +20,7 @@ class TaskService {
   }
 
   async completeTask(taskObj) {
-    const res = await api.put('api/tasks/' + taskObj.id);
+    const res = await api.put('api/tasks/' + taskObj.id, { isCompleted: true });
     taskObj.isCompleted = true;
   }
 

@@ -52,13 +52,14 @@ class TaskService {
       // { $set: updates },
       // { runValidators: true, new: true }
     )
+    if (!updated) { throw new BadRequest('Cannot find the specified task with your ID') }
+
     updated.name = taskUpdates.name || updated.name
     updated.weight = taskUpdates.weight || updated.weight
     updated.isComplete = taskUpdates.isComplete || updated.isComplete
     updated.sprintId = taskUpdates.sprintId || updated.sprintId
-    updated.projectId = taskUpdates.projectId || updated.projectId
+    // updated.projectId = taskUpdates.projectId || updated.projectId
     await updated.save()
-    // if (!updated) { throw new BadRequest('Cannot find the specified task with your ID') }
     return updated
   }
 

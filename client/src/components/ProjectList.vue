@@ -122,10 +122,10 @@ export default {
           if (router.name == 'Project') {
             Offcanvas.getOrCreateInstance('#project-list').hide();
           }
-          router.push({ name: 'Project', params: { projectId: projectObj.id } });
           _getSprintsByProjectId(projectObj.id);
           _getTasksByProjectId(projectObj.id);
           _getNotesByProjectId(projectObj.id);
+          router.push({ name: 'Project', params: { projectId: projectObj.id } });
         }
         catch (error) { Pop.error(error); }
       },

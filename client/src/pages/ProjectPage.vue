@@ -35,81 +35,85 @@
           </button>
         </div>
 
-        <section v-for="(sprint, i) in sprints" class="row p-0 px-md-5 py-md-4 my-2">
-          <div class="col-12 bg-light shadow p-0 border border-primary rounded">
-            <span class="d-flex align-items-center rounded-top py-3 px-2 px-md-4" type="button"
-              @click="expandSprint('#' + sprint.id)" aria-expanded="false" :aria-controls="sprint.id">
-              <i class="fs-1 mdi mdi-abacus" :style="'color:' + colorGen() + ';'"></i>
-              <p class="mb-0 mx-3 fw-bold fs-5">S{{ i + 1 }} - {{ sprint.name }} </p>
-              <span class="text-primary fs-5 d-flex align-items-center ms-3 me-auto">
-                <p class="mb-0 fw-bold fs-5">{{ calcWeight(sprint.id) }}</p>
-                <i class="fs-2 mdi mdi-weight"></i>
+        <div class="col-12 p-0">
+          <section v-for="(sprint, i) in sprints" class="row p-0 px-md-5 py-md-4 my-2">
+            <div class="col-12 bg-light shadow p-0 border border-primary rounded">
+              <span class="d-flex align-items-center rounded-top py-3 px-2 px-md-4" type="button"
+                @click="expandSprint('#' + sprint.id)" aria-expanded="false" :aria-controls="sprint.id">
+                <i class="fs-1 mdi mdi-abacus" :style="'color:' + colorGen() + ';'"></i>
+                <p class="mb-0 mx-3 fw-bold fs-5">S{{ i + 1 }} - {{ sprint.name }} </p>
+                <span class="text-primary fs-5 d-flex align-items-center ms-3 me-auto">
+                  <p class="mb-0 fw-bold fs-5">{{ calcWeight(sprint.id) }}</p>
+                  <i class="fs-2 mdi mdi-weight"></i>
+                </span>
+                <span class="d-flex">
+                  <button class="btn btn-outline-primary ps-1 ps-md-3 py-0 text-nowrap" @click.stop="addTask(sprint)">
+                    Add Task <i class="fs-5 mdi mdi-plus"></i>
+                  </button>
+                  <p v-if="tasks.filter(task => task.sprintId == sprint.id).length > 0" class="mb-0 ms-3 fw-bold fs-5">
+                    {{ tasks.filter(task => task.sprintId == sprint.id && task.isComplete).length + '/' +
+                      tasks.filter(task => task.sprintId == sprint.id).length }} Tasks Complete
+                  </p>
+                  <p class="mb-0 ms-3 py-0"></p>
+                </span>
               </span>
-              <span class="d-flex">
-                <button class="btn btn-outline-primary ps-1 ps-md-3 py-0 text-nowrap" @click.stop="addTask(sprint)">
-                  Add Task <i class="fs-5 mdi mdi-plus"></i>
-                </button>
-                <p v-if="tasks.filter(task => task.sprintId == sprint.id).length > 0" class="mb-0 ms-3 fw-bold fs-5">
-                  {{ tasks.filter(task => task.sprintId == sprint.id && task.isComplete).length + '/' +
-                    tasks.filter(task => task.sprintId == sprint.id).length }} Tasks Complete
-                </p>
-                <p class="mb-0 ms-3 py-0"></p>
-              </span>
-            </span>
 
-            <span class="rounded-bottom">
-              <CollapseComponent :collapseId="sprint.id">
-                <template #collapseBody>
-                  <div v-if="tasks.filter(task => task.sprintId == sprint.id).length > 0" class="container-fluid">
-                    <section v-for="task in tasks.filter(task => task.sprintId == sprint.id)" class="row">
-                      <div class="col-12 d-flex align-items-center px-0 px-md-5">
-                        <input type="checkbox" name="isComplete" id="isComplete" class="mx-3">
-                        <p class="mb-0 px-3 py-1 rounded-pill bg-light shadow outline"
-                          :style="'border: 2px solid ' + colorGen() + ';'">
-                          {{ task.name }}
-                        </p>
-                        <i class="fs-3 mx-3 text-secondary mdi mdi-delete-forever" type="button"
-                          @click="deleteTask(task.id)"></i>
-                      </div>
-                      <div class="col-10 px-4 px-md-5 py-3 d-flex">
-                        <div class="vert me-4 mx-md-4 ps-1"></div>
-                        <span class="d-block">
-                          <small class="d-flex align-items-center text-secondary mb-2">
-                            <i class=" me-2 fs-5 mdi mdi-run"></i>
-                            <span class="d-flex">
-                              <p class="mb-0 text-nowrap">Created - {{ task.createdAt.toLocaleDateString() }}</p>
-                              <span v-if="task.isComplete" class="d-flex">
-                                <p class="mb-0 mx-2">|</p>
-                                <p class="mb-0 text-nowrap">Completed - {{ task.completedOn.toLocaleDateString() }}</p>
+              <span class="rounded-bottom">
+                <CollapseComponent :collapseId="sprint.id">
+                  <template #collapseBody>
+                    <div v-if="tasks.filter(task => task.sprintId == sprint.id).length > 0" class="container-fluid">
+                      <section v-for="task in tasks.filter(task => task.sprintId == sprint.id)"
+                        class="row hovered rounded my-2 pt-2" type="button" @click="openTaskDetails(task.id)">
+                        <div class="col-12 d-flex align-items-center px-0 px-md-5">
+                          <input type="checkbox" name="isComplete" id="isComplete" class="mx-3" :checked="task.isComplete"
+                            @change.stop="completeTask(task)">
+                          <p class="mb-0 px-3 py-1 rounded-pill bg-light shadow outline"
+                            :style="'border: 2px solid ' + colorGen() + ';'">
+                            {{ task.name }}
+                          </p>
+                          <i class="fs-3 mx-3 text-secondary mdi mdi-delete-forever" type="button"
+                            @click="deleteTask(task.id)"></i>
+                        </div>
+                        <div class="col-10 px-4 px-md-5 py-3 d-flex">
+                          <div class="vert me-4 mx-md-4 ps-1"></div>
+                          <span class="d-block">
+                            <small class="d-flex align-items-center text-secondary mb-2">
+                              <i class=" me-2 fs-5 mdi mdi-run"></i>
+                              <span class="d-flex">
+                                <p class="mb-0 text-nowrap">Created - {{ task.createdAt.toLocaleDateString() }}</p>
+                                <span v-if="task.isComplete" class="d-flex">
+                                  <p class="mb-0 mx-2">|</p>
+                                  <p class="mb-0 text-nowrap">Completed - {{ task.completedOn.toLocaleDateString() }}</p>
+                                </span>
                               </span>
-                            </span>
-                          </small>
-                          <div class="d-flex align-items-center text-secondary mx-1">
-                            <span class="fs-5 d-flex align-items-center">
-                              <p class="mb-1"> {{ notes.length }} </p>
-                              <i class="mx-2 mdi mdi-message-reply-text"></i>
-                            </span>
-                            <span class="fs-5 ms-4 d-flex align-items-center">
-                              <p class="mb-1"> {{ task.weight }} </p>
-                              <i class="fs-4 mx-2 mdi mdi-weight"></i>
-                            </span>
-                          </div>
-                        </span>
-                      </div>
-                    </section>
-                  </div>
-                  <div class="W-100 d-flex justify-content-end justify-content-md-end align-items-end p-0">
-                    <button class="btn selectable text-primary d-flex align-items-center"
-                      @click="deleteSprint(sprint.id)">
-                      Delete Sprint {{ i + 1 }}
-                      <i class="fs-3 ms-2 mdi mdi-delete-forever"></i>
-                    </button>
-                  </div>
-                </template>
-              </CollapseComponent>
-            </span>
-          </div>
-        </section>
+                            </small>
+                            <div class="d-flex align-items-center text-secondary mx-1">
+                              <span class="fs-5 d-flex align-items-center">
+                                <p class="mb-1"> {{ notes.filter(note => note.taskId == task.id).length }} </p>
+                                <i class="mx-2 mdi mdi-message-reply-text"></i>
+                              </span>
+                              <span class="fs-5 ms-4 d-flex align-items-center">
+                                <p class="mb-1"> {{ task.weight }} </p>
+                                <i class="fs-4 mx-2 mdi mdi-weight"></i>
+                              </span>
+                            </div>
+                          </span>
+                        </div>
+                      </section>
+                    </div>
+                    <div class="W-100 d-flex justify-content-end justify-content-md-end align-items-end p-0">
+                      <button class="btn selectable text-primary d-flex align-items-center"
+                        @click="deleteSprint(sprint.id)">
+                        Delete Sprint {{ i + 1 }}
+                        <i class="fs-3 ms-2 mdi mdi-delete-forever"></i>
+                      </button>
+                    </div>
+                  </template>
+                </CollapseComponent>
+              </span>
+            </div>
+          </section>
+        </div>
       </section>
     </div>
 
@@ -133,6 +137,15 @@
     <OffcanvasComponent :offcanvasId="'project-list'">
       <template #offcanvasBody>
         <ProjectList :showMembers="false" :createBtn="'bottom'" />
+      </template>
+    </OffcanvasComponent>
+
+    <OffcanvasComponent :offcanvasId="'taskDetails'" :location="'end'">
+      <template #offcanvasBody>
+        <form @submit="">
+
+          <button></button>
+        </form>
       </template>
     </OffcanvasComponent>
 
@@ -194,7 +207,7 @@
 <script>
 import Pop from "../utils/Pop.js";
 import { AppState } from "../AppState.js";
-import { Collapse, Modal } from "bootstrap";
+import { Collapse, Modal, Offcanvas } from "bootstrap";
 import { computed, watchEffect, ref } from 'vue';
 import { useRoute, useRouter } from "vue-router";
 import { projectService } from '../services/ProjectService.js'
@@ -232,7 +245,6 @@ export default {
       try { await projectService.getNotesByProjectId(projectId); }
       catch (error) { Pop.error(error); }
     }
-
 
     watchEffect(async () => {
       if (route.params.projectId) {
@@ -305,6 +317,11 @@ export default {
         catch (error) { Pop.error(error); }
       },
 
+      async completeTask(taskObj) {
+        try { await taskService.completeTask(taskObj); }
+        catch (error) { Pop.error(error); }
+      },
+
       addTask(sprintObj) {
         taskForm.value.projectId = sprintObj.projectId;
         taskForm.value.sprintId = sprintObj.id;
@@ -317,9 +334,14 @@ export default {
         Collapse.getOrCreateInstance(collapseId).hide();
       },
 
+      openTaskDetails(taskObj) {
+        AppState.activeTask = taskObj;
+        Offcanvas.getOrCreateInstance(taskDetails).show();
+      },
+
       calcWeight(sprintId) {
         let total = 0;
-        this.tasks.forEach(task => {
+        this.tasks?.forEach(task => {
           if (task.sprintId == sprintId) {
             total += task.weight
           }
@@ -369,5 +391,9 @@ input[type=checkbox] {
 .vert {
   border-right: 1px solid grey;
   height: 100%;
+}
+
+.hovered:hover {
+  box-shadow: 0 0 8px 2px #01234567;
 }
 </style>
