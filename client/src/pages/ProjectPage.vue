@@ -30,15 +30,15 @@
             </div>
           </span>
           <button class="btn btn-outline-primary text-nowrap mx-3 py-2 px-md-5" data-bs-toggle="modal"
-            data-bs-target="#create-sprint">
+            data-bs-target="#createSprint">
             Add Sprint
           </button>
         </div>
 
         <section v-for="(sprint, i) in sprints" class="row p-0 px-md-5 py-md-4 my-2">
           <div class="col-12 bg-light shadow p-0 border border-primary rounded">
-            <span class="d-flex align-items-center rounded-top py-3 px-2 px-md-4" type="button" data-bs-toggle="collapse"
-              :data-bs-target="'#' + sprint.id" aria-expanded="false" :aria-controls="sprint.id">
+            <span class="d-flex align-items-center rounded-top py-3 px-2 px-md-4" type="button"
+              @click="expandSprint('#' + sprint.id)" aria-expanded="false" :aria-controls="sprint.id">
               <i class="fs-1 mdi mdi-abacus" :style="'color:' + colorGen() + ';'"></i>
               <p class="mb-0 mx-3 fw-bold fs-5">S{{ i + 1 }} - {{ sprint.name }} </p>
               <span class="text-primary fs-5 d-flex align-items-center ms-3 me-auto">
@@ -46,21 +46,22 @@
                 <i class="fs-2 mdi mdi-weight"></i>
               </span>
               <span class="d-flex">
-                <button class="btn btn-outline-primary ps-1 ps-md-3 py-0 text-nowrap">
+                <button class="btn btn-outline-primary ps-1 ps-md-3 py-0 text-nowrap" @click.stop="addTask(sprint)">
                   Add Task <i class="fs-5 mdi mdi-plus"></i>
                 </button>
-                <p v-if="tasks.length > 0" class="mb-0 ms-3 fw-bold fs-5">
-                  {{ tasks.filter(task => task.isComplete).length + '/' + tasks.length }} Tasks Complete
+                <p v-if="tasks.filter(task => task.sprintId == sprint.id).length > 0" class="mb-0 ms-3 fw-bold fs-5">
+                  {{ tasks.filter(task => task.sprintId == sprint.id && task.isComplete).length + '/' +
+                    tasks.filter(task => task.sprintId == sprint.id).length }} Tasks Complete
                 </p>
                 <p class="mb-0 ms-3 py-0"></p>
               </span>
             </span>
 
-            <span v-if="tasks.length > 0" class="rounded-bottom">
+            <span v-if="tasks.filter(task => task.sprintId == sprint.id).length > 0" class="rounded-bottom">
               <CollapseComponent :collapseId="sprint.id">
                 <template #collapseBody>
                   <div class="container-fluid">
-                    <section v-for="task in tasks" class="row">
+                    <section v-for="task in tasks.filter(task => task.sprintId == sprint.id)" class="row">
                       <div class="col-12 d-flex align-items-center px-0 px-md-5">
                         <input type="checkbox" name="isComplete" id="isComplete" class="mx-3">
                         <p class="mb-0 px-3 py-1 rounded-pill bg-light shadow outline"
@@ -96,7 +97,8 @@
                         </span>
                       </div>
                       <div class="col-12 col-md-2 d-flex justify-content-end justify-content-md-end align-items-end p-0">
-                        <button class="btn selectable text-primary d-flex align-items-center">
+                        <button class="btn selectable text-primary d-flex align-items-center"
+                          @click="deleteSprint(sprint.id)">
                           Delete Sprint {{ i + 1 }}
                           <i class="fs-3 ms-2 mdi mdi-delete-forever"></i>
                         </button>
@@ -150,9 +152,36 @@
         </template>
         <template #modalBody>
           <form @submit.prevent="createSprint()">
-            <label for="name">Name</label>
-            <input type="text" class="form-control" maxlength="50" name="name" placeholder="Name..." required>
+            <div class="mb-3">
+              <label for="name">Name</label>
+              <input v-model="sprintForm.name" type="text" class="form-control" maxlength="50" name="name"
+                placeholder="Name..." required>
+            </div>
             <button class="btn btn-outline-primary" type="submit">Create</button>
+          </form>
+        </template>
+      </ModalComponent>
+
+      <ModalComponent :modalId="'createTask'">
+        <template #modalTitle>
+          Create Task
+          <p class="fs-6 mb-0">{{ activeProject.name + ' > ' + taskForm.sprintName }}</p>
+        </template>
+        <template #modalBody>
+          <form @submit.prevent="createTask()">
+            <span class="d-flex">
+              <div class="mb-4 w-100">
+                <label for="name">Name</label>
+                <input v-model="taskForm.name" type="text" class="form-control" maxlength="50" name="name"
+                  placeholder="Name..." required>
+              </div>
+              <div class="ms-5 me-4 mb-4 w-25">
+                <label for="weight">Weight</label>
+                <input v-model="taskForm.weight" type="number" class="form-control" min="1" max="10" name="weight"
+                  placeholder="1-10" required>
+              </div>
+            </span>
+            <button class="btn btn-outline-primary mt-2" type="submit">Create</button>
           </form>
         </template>
       </ModalComponent>
@@ -165,48 +194,55 @@
 <script>
 import Pop from "../utils/Pop.js";
 import { AppState } from "../AppState.js";
-import { computed, onMounted, watchEffect } from 'vue';
+import { computed, watchEffect, ref } from 'vue';
 import { useRoute, useRouter } from "vue-router";
 import { projectService } from '../services/ProjectService.js'
+import { sprintService } from '../services/SprintService.js'
+import { taskService } from '../services/TaskService.js'
 import OffcanvasComponent from "../components/OffcanvasComponent.vue";
 import CollapseComponent from "../components/CollapseComponent.vue";
 import ModalComponent from "../components/ModalComponent.vue";
 import ProjectList from "../components/ProjectList.vue";
 import ProjectForm from '../components/ProjectForm.vue'
 import { logger } from "../utils/Logger.js";
+import { Collapse, Modal } from "bootstrap";
 
 export default {
   setup() {
+    const sprintForm = ref({});
+    const taskForm = ref({});
+
     const route = useRoute();
     const router = useRouter();
 
-    async function _getProjectById() {
-      try { await projectService.getProjectById(route.params.projectId); }
+    async function _getProjectById(projectId) {
+      try { await projectService.getProjectById(projectId); }
       catch (error) { Pop.error(error); }
     }
 
-    async function _getSprintsByProjectId() {
-      try { await projectService.getSprintsByProjectId(route.params.projectId); }
+    async function _getSprintsByProjectId(projectId) {
+      try { await projectService.getSprintsByProjectId(projectId); }
       catch (error) { Pop.error(error); }
     }
-    async function _getTasksByProjectId() {
-      try { await projectService.getTasksByProjectId(route.params.projectId); }
+    async function _getTasksByProjectId(projectId) {
+      try { await projectService.getTasksByProjectId(projectId); }
       catch (error) { Pop.error(error); }
     }
-    async function _getNotesByProjectId() {
-      try { await projectService.getNotesByProjectId(route.params.projectId); }
+    async function _getNotesByProjectId(projectId) {
+      try { await projectService.getNotesByProjectId(projectId); }
       catch (error) { Pop.error(error); }
     }
 
-    // watchEffect(() => {
-    //   if (route.params.projectId) {
-    //     _getProjectById();
-    //     _getSprintsByProjectId();
-    //     _getTasksByProjectId();
-    //     _getNotesByProjectId();
-    //   }
-    // });
 
+    watchEffect(async () => {
+      if (route.params.projectId) {
+        _getProjectById(route.params.projectId);
+        _getSprintsByProjectId(route.params.projectId);
+        _getTasksByProjectId(route.params.projectId);
+        _getNotesByProjectId(route.params.projectId);
+      }
+
+    })
     function colorGen() {
       const hexArr = '0123456789abcdef'.split('');
       let hexCode = '';
@@ -225,7 +261,10 @@ export default {
     //     _getNotesByProjectId();
     //   }
     // });
+
     return {
+      sprintForm,
+      taskForm,
       colorGen,
       account: computed(() => AppState.account),
       activeProject: computed(() => AppState.activeProject),
@@ -241,6 +280,37 @@ export default {
           await projectService.deleteProject();
           router.push({ name: 'Projects' });
         } catch (error) { Pop.error(error); }
+      },
+
+      async createSprint() {
+        try {
+          sprintForm.value.projectId = route.params.projectId;
+          await sprintService.createSprint(sprintForm.value);
+          sprintForm.value = {};
+          Modal.getOrCreateInstance('#createSprint').hide();
+        }
+        catch (error) { Pop.error(error); }
+      },
+
+      expandSprint(collapseId) {
+        Collapse.getOrCreateInstance(collapseId).show();
+        Collapse.getOrCreateInstance(collapseId).hide();
+      },
+
+      addTask(sprintObj) {
+        taskForm.value.projectId = sprintObj.projectId;
+        taskForm.value.sprintId = sprintObj.id;
+        taskForm.value.sprintName = sprintObj.name;
+        Modal.getOrCreateInstance('#createTask').show();
+      },
+
+      async createTask() {
+        try {
+          await taskService.createTask(taskForm.value);
+          taskForm.value = {};
+          Modal.getOrCreateInstance('#createTask').hide();
+        }
+        catch (error) { Pop.error(error); }
       },
 
     };

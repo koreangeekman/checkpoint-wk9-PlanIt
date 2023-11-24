@@ -58,7 +58,7 @@ import { AppState } from "../AppState.js";
 import { computed, watchEffect } from 'vue';
 import { Offcanvas, Modal } from "bootstrap";
 import { projectService } from '../services/ProjectService.js'
-import { useRoute, useRouter, onBeforeRouteUpdate } from "vue-router";
+import { useRouter } from "vue-router";
 
 export default {
   props: {
@@ -68,35 +68,25 @@ export default {
 
   setup() {
 
-    const route = useRoute();
     const router = useRouter();
 
     watchEffect(async () => {
       if (AppState.account.id) {
         _getProjectsByAccountId();
-        if (route.params.projectId) {
-          _getProjectById(route.params.projectId);
-          _getSprintsByProjectId(route.params.projectId);
-          _getTasksByProjectId(route.params.projectId);
-          _getNotesByProjectId(route.params.projectId);
-        }
       }
     })
-
     async function _getProjectsByAccountId() {
       try { await projectService.getProjectsByAccountId(); }
       catch (error) { Pop.error(error); }
     }
+
 
     async function _setActiveProject(projectObj) {
       try { await projectService.setActiveProject(projectObj); }
       catch (error) { Pop.error(error); }
     }
 
-    async function _getProjectById(projectId) {
-      try { await projectService.getProjectById(projectId); }
-      catch (error) { Pop.error(error); }
-    }
+
     async function _getSprintsByProjectId(projectId) {
       try { await projectService.getSprintsByProjectId(projectId); }
       catch (error) { Pop.error(error); }
