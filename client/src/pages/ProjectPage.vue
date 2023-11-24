@@ -63,16 +63,16 @@
                   <template #collapseBody>
                     <div v-if="tasks.filter(task => task.sprintId == sprint.id).length > 0" class="container-fluid">
                       <section v-for="task in tasks.filter(task => task.sprintId == sprint.id)"
-                        class="row hovered rounded my-2 pt-2" type="button" @click="openTaskDetails(task.id)">
+                        class="row hovered rounded my-2 pt-2" type="button" @click="openTaskDetails(sprint, task)">
                         <div class="col-12 d-flex align-items-center px-0 px-md-5">
                           <input type="checkbox" name="isComplete" id="isComplete" class="mx-3" :checked="task.isComplete"
-                            @change.stop="completeTask(task)">
+                            @click.stop="completeTask(task)" :disabled="task.isComplete">
                           <p class="mb-0 px-3 py-1 rounded-pill bg-light shadow outline"
                             :style="'border: 2px solid ' + colorGen() + ';'">
                             {{ task.name }}
                           </p>
                           <i class="fs-3 mx-3 text-secondary mdi mdi-delete-forever" type="button"
-                            @click="deleteTask(task.id)"></i>
+                            @click.stop="deleteTask(task.id)"></i>
                         </div>
                         <div class="col-10 px-4 px-md-5 py-3 d-flex">
                           <div class="vert me-4 mx-md-4 ps-1"></div>
@@ -140,14 +140,83 @@
       </template>
     </OffcanvasComponent>
 
-    <OffcanvasComponent :offcanvasId="'taskDetails'" :location="'end'">
-      <template #offcanvasBody>
-        <form @submit="">
+    <span v-if="activeTask">
+      <OffcanvasComponent :offcanvasId="'taskDetails'" :settings="'offcanvas-end offcanvas-size-xxl'">
+        <template #offcanvasHeader>
+          <span class="d-flex align-items-center w-100 border-bottom border-primary ps-3 pe-2">
+            <button type="button" class="btn-close me-3" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            <p class="mb-0"> {{ activeSprint?.name }} </p>
+            <i class="fs-1 mx-2 mdi mdi-chevron-right"></i>
+            <p class="mb-0"> {{ activeTask?.name }} </p>
+            <button v-if="activeTask?.edit" type="button" class="btn selectable my-1 ms-auto" aria-label="Save"
+              @click="saveTask()">
+              <i class="fs-3 text-primary mdi mdi-content-save"></i>
+            </button>
+            <button v-else type="button" class="btn selectable my-1 ms-auto" aria-label="Edit" @click="editTask()">
+              <i class="fs-3 mdi mdi-pencil"></i>
+            </button>
+          </span>
+        </template>
+        <template #offcanvasBody>
+          <span v-if="activeTask?.edit" class="">
+            <form @submit.prevent="saveTask()">
+              <div class="mb-3">
+                <label for="name">Name</label>
+                <input v-model="taskForm.name" type="text" class="form-control" name="name" maxlength="50" required>
+              </div>
+              <span class="d-flex">
+                <div class="mb-3 pe-3 w-25">
+                  <label for="weight">Weight <i class="text-primary mdi mdi-weight"></i></label>
+                  <input v-model="taskForm.weight" type="number" class="form-control" name="weight" min="1" max="10"
+                    required>
+                </div>
+                <div class="mb-3 w-75">
+                  <label for="sprintId">Sprint</label>
+                  <select v-model="taskForm.sprintId" type="text" class="form-select" name="sprint" maxlength="50"
+                    required>
+                    <option v-for="sprint in sprints" :value="sprint.id">{{ sprint.name }}</option>
+                  </select>
+                </div>
+              </span>
+              <button class="btn btn-outline-secondary mx-2" @click="editTask()">Cancel</button>
+              <button class="btn btn-primary px-4" type="submit">Save</button>
+            </form>
+          </span>
+          <span v-else>
+            <span class="d-block">
+              <p class="">Status</p>
+              <span class="d-flex align-items-center mx-3 mb-4">
+                <p class="rounded-pill bg-primary mb-0 px-4 py-1">Pending</p>
+                <p class="mb-0 px-4 py-1 w-100">
+                  <hr>
+                </p>
+                <p v-if="!activeTask?.isComplete" class="rounded-pill btn btn-outline-success mb-0 px-4 py-1">Done</p>
+                <p v-else class="rounded-pill btn btn-success mb-0 px-4 py-1">Done</p>
+              </span>
+            </span>
+          </span>
+          <span class="notes">
+            <div class="px-md-5 py-md-3 fw-bold text-center">
+              <p class="mb-0 fs-5">Notes</p>
+              <hr>
+            </div>
+            <form @submit="addNote()">
+              <label for="body">Add a Note</label>
+              <span class="d-flex mt-2">
+                <textarea v-model="noteForm.body" class="rounded-start w-100 ps-2" name="body" id="body" rows="2"
+                  placeholder="Say something..."></textarea>
+                <button class="px-4 text-center border-0 rounded-end bg-primary darken-10 selectable" type="submit">
+                  <i class="text-light mdi mdi-send"></i>
+                </button>
+              </span>
+            </form>
+            <div v-for="note in notes.filter(n => n.taskId == activeTask.id)" class="card">
 
-          <button></button>
-        </form>
-      </template>
-    </OffcanvasComponent>
+            </div>
+          </span>
+        </template>
+      </OffcanvasComponent>
+    </span>
 
     <span v-if="activeProject">
       <ModalComponent :modalId="'editProject'">
@@ -224,6 +293,7 @@ export default {
   setup() {
     const sprintForm = ref({});
     const taskForm = ref({});
+    const noteForm = ref({});
 
     const route = useRoute();
     const router = useRouter();
@@ -253,7 +323,11 @@ export default {
         _getTasksByProjectId(route.params.projectId);
         _getNotesByProjectId(route.params.projectId);
       }
-
+      if (AppState.activeTask.edit) {
+        taskForm.value = { ...AppState.activeTask }
+      } else {
+        taskForm.value = {}
+      }
     })
     function colorGen() {
       const hexArr = '0123456789abcdef'.split('');
@@ -268,11 +342,14 @@ export default {
     return {
       sprintForm,
       taskForm,
+      noteForm,
       colorGen,
       account: computed(() => AppState.account),
       activeProject: computed(() => AppState.activeProject),
       projects: computed(() => AppState.projects),
+      activeSprint: computed(() => AppState.activeSprint),
       sprints: computed(() => AppState.sprints),
+      activeTask: computed(() => AppState.activeTask),
       tasks: computed(() => AppState.tasks),
       notes: computed(() => AppState.notes),
 
@@ -321,6 +398,18 @@ export default {
         try { await taskService.completeTask(taskObj); }
         catch (error) { Pop.error(error); }
       },
+      async saveTask() {
+        try {
+          await taskService.updateTask(taskForm.value);
+          AppState.activeTask.edit = false;
+          Offcanvas.getOrCreateInstance('#taskDetails').hide();
+        }
+        catch (error) { Pop.error(error); }
+      },
+
+      editTask() {
+        AppState.activeTask.edit = !AppState.activeTask.edit;
+      },
 
       addTask(sprintObj) {
         taskForm.value.projectId = sprintObj.projectId;
@@ -334,9 +423,10 @@ export default {
         Collapse.getOrCreateInstance(collapseId).hide();
       },
 
-      openTaskDetails(taskObj) {
+      openTaskDetails(sprintObj, taskObj) {
+        AppState.activeSprint = sprintObj;
         AppState.activeTask = taskObj;
-        Offcanvas.getOrCreateInstance(taskDetails).show();
+        Offcanvas.getOrCreateInstance('#taskDetails').show();
       },
 
       calcWeight(sprintId) {

@@ -14,5 +14,6 @@ export class Task {
     this.creator = data.creator
     this.createdAt = new Date(data.createdAt)
     this.updatedAt = new Date(data.updatedAt)
+    this.edit = false
   }
 }

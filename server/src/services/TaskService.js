@@ -59,6 +59,9 @@ class TaskService {
     updated.isComplete = taskUpdates.isComplete || updated.isComplete
     updated.sprintId = taskUpdates.sprintId || updated.sprintId
     // updated.projectId = taskUpdates.projectId || updated.projectId
+    if (updated.isComplete && !updated.completedOn) {
+      updated.completedOn = new Date();
+    }
     await updated.save()
     return updated
   }

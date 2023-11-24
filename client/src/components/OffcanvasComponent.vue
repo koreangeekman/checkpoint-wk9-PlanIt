@@ -1,11 +1,12 @@
 <template>
-  <div class="offcanvas" :class="'offcanvas-' + location" tabindex="-1" :id="offcanvasId"
-    :aria-labelledby="offcanvasId + 'Label'">
-    <div class="offcanvas-header">
-      <h5 class="offcanvas-title" :id="offcanvasId + 'Label'">
-        <slot name="offcanvasTitle"></slot>
-      </h5>
-      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  <div class="offcanvas" :class="settings" tabindex="-1" :id="offcanvasId" :aria-labelledby="offcanvasId + 'Label'">
+    <div class="offcanvas-header p-0">
+      <slot name="offcanvasHeader">
+        <h5 class="offcanvas-title" :id="offcanvasId + 'Label'">
+          <slot name="offcanvasTitle"></slot>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </slot>
     </div>
     <div class="offcanvas-body">
       <slot name="offcanvasBody"></slot>
@@ -21,7 +22,7 @@
 export default {
   props: {
     offcanvasId: { type: String },
-    location: { type: String, default: 'start' }
+    settings: { type: String, default: 'offcanvas-start' }
   },
 
   setup() {
