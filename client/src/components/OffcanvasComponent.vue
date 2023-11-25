@@ -5,7 +5,7 @@
         <h5 class="offcanvas-title" :id="offcanvasId + 'Label'">
           <slot name="offcanvasTitle"></slot>
         </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        <button type="button" class="btn-close p-0 m-0 mt-3 me-3" data-bs-dismiss="offcanvas" aria-label="Close"></button>
       </slot>
     </div>
     <div class="offcanvas-body">

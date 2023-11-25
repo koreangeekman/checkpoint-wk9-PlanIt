@@ -5,7 +5,7 @@ class NotesService {
 
   // async getNotes(query) {
   //   const notes = await dbContext.Notes.find(query)
-  //     .populate('creator', 'name email pictures')
+  //     .populate('creator', 'name email picture')
   //     .populate('project')
   //     .populate('task')
   //   return notes
@@ -13,7 +13,7 @@ class NotesService {
 
   async getNotesByProjectId(projectId) {
     const notes = await dbContext.Notes.find({ projectId })
-      .populate('creator', 'name email pictures')
+      .populate('creator', 'name email picture')
       .populate('project')
       .populate('task')
     return notes

@@ -5,21 +5,21 @@ class SprintService {
 
   async getSprints(query) {
     const sprints = await dbContext.Sprints.find(query)
-      .populate('creator', 'name email pictures')
+      .populate('creator', 'name email picture')
       .populate('project')
     return sprints
   }
 
   async getSprintsByProjectId(projectId) {
     const sprints = await dbContext.Sprints.find({ projectId })
-      .populate('creator', 'name email pictures')
+      .populate('creator', 'name email picture')
       .populate('project')
     return sprints
   }
 
   async createSprint(sprintData) {
     const newSprint = await dbContext.Sprints.create(sprintData);
-    await newSprint.populate('creator', 'name email pictures');
+    await newSprint.populate('creator', 'name email picture');
     await newSprint.populate('project');
     return newSprint
   }

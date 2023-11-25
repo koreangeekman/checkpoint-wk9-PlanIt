@@ -7,7 +7,8 @@
             <p class="fs-1 fw-bold mb-0">
               {{ activeProject.name }}
             </p>
-            <button class="btn selectable darken-20 mx-2 p-1 fs-1" @click="deleteProject()">
+            <button v-if="activeProject.creatorId == account.id" class="btn selectable darken-20 mx-2 p-1 fs-1"
+              @click="deleteProject()">
               <i class="text-primary mdi mdi-delete-forever"></i>
             </button>
           </span>
@@ -71,7 +72,8 @@
                             :style="'border: 2px solid ' + colorGen() + ';'">
                             {{ task.name }}
                           </p>
-                          <i class="fs-3 mx-3 text-secondary mdi mdi-delete-forever" type="button"
+                          <i v-if="activeProject.creatorId == account.id"
+                            class="fs-3 mx-3 text-secondary mdi mdi-delete-forever" type="button"
                             @click.stop="deleteTask(task.id)"></i>
                         </div>
                         <div class="col-10 px-4 px-md-5 py-3 d-flex">
@@ -103,7 +105,7 @@
                     </div>
                     <div class="W-100 d-flex justify-content-end justify-content-md-end align-items-end p-0">
                       <button class="btn selectable text-primary d-flex align-items-center"
-                        @click="deleteSprint(sprint.id)">
+                        @click="deleteSprint(sprint.id)" v-if="activeProject.creatorId == account.id">
                         Delete Sprint {{ i + 1 }}
                         <i class="fs-3 ms-2 mdi mdi-delete-forever"></i>
                       </button>
@@ -172,8 +174,7 @@
                 </div>
                 <div class="mb-3 w-75">
                   <label for="sprintId">Sprint</label>
-                  <select v-model="taskForm.sprintId" type="text" class="form-select" name="sprint" maxlength="50"
-                    required>
+                  <select v-model="taskForm.sprintId" class="form-select" name="sprint" maxlength="50" required>
                     <option v-for="sprint in sprints" :value="sprint.id">{{ sprint.name }}</option>
                   </select>
                 </div>
@@ -200,19 +201,28 @@
               <p class="mb-0 fs-5">Notes</p>
               <hr>
             </div>
-            <form @submit="addNote()">
+            <form @submit.prevent="createNote()">
               <label for="body">Add a Note</label>
-              <span class="d-flex mt-2">
+              <span class="d-flex mt-2 mb-4">
                 <textarea v-model="noteForm.body" class="rounded-start w-100 ps-2" name="body" id="body" rows="2"
                   placeholder="Say something..."></textarea>
                 <button class="px-4 text-center border-0 rounded-end bg-primary darken-10 selectable" type="submit">
                   <i class="text-light mdi mdi-send"></i>
                 </button>
               </span>
+              <span v-for="note in notes.filter(n => n.taskId == activeTask.id)" class="d-flex my-3">
+                <div class="border border-primary rounded p-2 w-100">
+                  <span class="d-flex align-items-center">
+                    <img :src="note.creator.picture" :alt="note.creator.name" class="rounded-circle memberImg">
+                    <p class="mb-0 ms-2 fs-6 text-primary me-auto">{{ note.creator.email }}</p>
+                    <i class="text-danger selectable btn p-0 fs-4 mdi mdi-delete-forever" type="button"
+                      @click="deleteNote(note.id)"
+                      v-if="activeProject.creatorId == account.id || note.creatorId == account.id"></i>
+                  </span>
+                  <p class="mb-0 my-2">{{ note.body }}</p>
+                </div>
+              </span>
             </form>
-            <div v-for="note in notes.filter(n => n.taskId == activeTask.id)" class="card">
-
-            </div>
           </span>
         </template>
       </OffcanvasComponent>
@@ -282,6 +292,7 @@ import { useRoute, useRouter } from "vue-router";
 import { projectService } from '../services/ProjectService.js'
 import { sprintService } from '../services/SprintService.js'
 import { taskService } from '../services/TaskService.js'
+import { noteService } from '../services/NoteService.js'
 import OffcanvasComponent from "../components/OffcanvasComponent.vue";
 import CollapseComponent from "../components/CollapseComponent.vue";
 import ModalComponent from "../components/ModalComponent.vue";
@@ -375,6 +386,13 @@ export default {
           await taskService.deleteTask(taskId);
         } catch (error) { Pop.error(error); }
       },
+      async deleteNote(noteId) {
+        try {
+          const yes = await Pop.confirm('Delete this note?');
+          if (!yes) { return }
+          await noteService.deleteNote(noteId);
+        } catch (error) { Pop.error(error); }
+      },
 
       async createSprint() {
         try {
@@ -390,6 +408,15 @@ export default {
           await taskService.createTask(taskForm.value);
           taskForm.value = {};
           Modal.getOrCreateInstance('#createTask').hide();
+        }
+        catch (error) { Pop.error(error); }
+      },
+      async createNote() {
+        try {
+          noteForm.value.taskId = this.activeTask.id;
+          noteForm.value.projectId = route.params.projectId;
+          await noteService.createNote(noteForm.value);
+          noteForm.value = {};
         }
         catch (error) { Pop.error(error); }
       },
