@@ -126,7 +126,8 @@
         P
       </button>
       <button data-bs-toggle="modal" data-bs-target="#editProject" aria-controls="editProject"
-        class="px-3 py-1 fs-1 bg-gray text-dark border-0 selectable lighten-30">
+        class="px-3 py-1 fs-1 bg-gray text-dark border-0 selectable lighten-30"
+        v-if="activeProject.creatorId == account.id">
         <i class="mdi mdi-cog"></i>
       </button>
     </div>
@@ -154,7 +155,8 @@
               @click="saveTask()">
               <i class="fs-3 text-primary mdi mdi-content-save"></i>
             </button>
-            <button v-else type="button" class="btn selectable my-1 ms-auto" aria-label="Edit" @click="editTask()">
+            <button v-if="activeProject.creatorId == account.id && !activeTask?.edit" type="button"
+              class="btn selectable my-1 ms-auto" aria-label="Edit" @click="editTask()">
               <i class="fs-3 mdi mdi-pencil"></i>
             </button>
           </span>
